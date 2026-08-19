@@ -39,7 +39,7 @@
   }
 }
 
-/* אותה סקאלה של חמישה גדלים, מכווצת מעט למסך צר */
+/* The same five size scale, tightened slightly for narrow screens */
 @media (max-width: 639px) {
   :root {
     --step-4: 1.2rem;
@@ -51,12 +51,12 @@
   html {
     background: var(--bg);
     /*
-     * פס הגלילה של הדף מוסתר לגמרי ומוחלף בפס דק שמרחף מעל התוכן.
-     * כך הכותרת והכותרת התחתונה תופסות את כל הרוחב, ואין קפיצת פריסה
-     * במעבר בין עמוד עם גלילה לעמוד בלעדיה.
+     * The page scrollbar is hidden entirely and replaced by a thin bar over the content.
+     * That lets the header and footer span the full width, with no layout jump when
+     * moving between a page that scrolls and one that does not.
      */
     scrollbar-width: none;
-    /* גלילה אל עוגן לא תסתיר תוכן מתחת לשתי הכותרות הדביקות */
+    /* Anchor scrolling will not hide content behind the two fixed bars */
     scroll-padding-top: calc(var(--header-h) + var(--subbar-h) + 8px);
   }
 
@@ -217,13 +217,15 @@
     color: #fff;
   }
 
-  /* פס הניווט הראשי: מסלול אחד עם כדור שמחליק אל הטאב הפעיל */
+  /* Main navigation: one track with a pill that slides to the active tab */
   .nav-track {
     position: relative;
     display: flex;
     align-items: center;
     gap: 1px;
     padding: 4px;
+    /* Clears the fade at the scrolling end so the active pill is never dimmed */
+    padding-inline-end: 16px;
     border: 1px solid var(--line);
     border-radius: 999px;
     background: var(--surface-sunken);
@@ -271,7 +273,7 @@
     color: #fff;
   }
 
-  /* שתי הכותרות קבועות במקומן, ולכן הן לא זזות אף פעם בזמן גלילה */
+  /* Both bars are fixed in place, so they never move while scrolling */
   .app-header {
     position: fixed;
     top: 0;
@@ -285,7 +287,7 @@
     position: fixed;
     top: 0;
     bottom: 0;
-    left: 0;
+    right: 0;
     width: 12px;
     z-index: 60;
     pointer-events: none;
@@ -293,7 +295,7 @@
 
   .scroll-overlay-thumb {
     position: absolute;
-    left: 3px;
+    right: 3px;
     width: 4px;
     border-radius: 999px;
     background: #b3bcdd;
@@ -305,7 +307,7 @@
   .scroll-overlay-thumb:hover,
   .scroll-overlay-thumb[data-dragging='true'] {
     width: 7px;
-    left: 2px;
+    right: 2px;
     background: #7f8bb8;
   }
 
@@ -342,7 +344,7 @@
   .subtab-bar {
     position: fixed;
     inset-inline: 0;
-    /* פיקסל אחד של חפיפה אל מתחת לכותרת, כדי שלא ייפתח תפר שהתוכן נראה דרכו */
+    /* One pixel of overlap under the header so no seam opens for content to show through */
     top: calc(var(--header-h) - 1px);
     z-index: 30;
     background: var(--surface-sunken);
@@ -392,7 +394,7 @@
     font-weight: 700;
   }
 
-  /* פס אחד שמחליק אל הטאב הפעיל, במקום פס נפרד לכל טאב */
+  /* One indicator that slides to the active tab, instead of one per tab */
   .subtab-indicator {
     position: absolute;
     bottom: 0;
@@ -429,6 +431,17 @@
   }
 
   @media (max-width: 639px) {
+    /* Only the icon remains in the narrow footer, so the link needs a real tap target */
+    .footer-link {
+      min-height: 36px;
+      padding-inline: 0.8rem;
+    }
+
+    .footer-link svg {
+      width: 16px;
+      height: 16px;
+    }
+
     .subtab {
       gap: 0.35rem;
       padding: 0.7rem 0.45rem;

@@ -1,5 +1,5 @@
 {
-  // אתר סטטי לחלוטין: אין worker script, רק הגשה של תיקיית dist
+  // Fully static site: no worker script, just serving the dist folder
   "name": "algorithmx",
   "compatibility_date": "2026-08-19",
   "assets": {

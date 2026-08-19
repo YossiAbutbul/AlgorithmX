@@ -3,8 +3,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 const MIN_THUMB = 34;
 
 /**
- * פס גלילה דק שמרחף מעל התוכן, במקום פס הגלילה של הדפדפן שתופס רוחב.
- * בגרף RTL פס הגלילה הטבעי יושב בצד שמאל, ולכן גם זה.
+ * Thin scrollbar floating over the content, replacing the browser bar that takes width.
+ * Kept on the right side of the viewport, where a scrollbar is expected.
  */
 export function ScrollOverlay() {
   const [thumb, setThumb] = useState({ top: 0, height: 0, visible: false });
@@ -27,7 +27,7 @@ export function ScrollOverlay() {
 
   useEffect(() => {
     update();
-    // המדידה הראשונה יכולה לרוץ לפני שהתוכן קיבל את הגובה הסופי שלו
+    // The first measurement can run before the content reaches its final height
     const raf = requestAnimationFrame(update);
     const timer = window.setTimeout(update, 250);
     document.fonts?.ready.then(update).catch(() => undefined);

@@ -19,7 +19,7 @@ export interface BellmanResult {
 }
 
 
-/** מהצומת שהשתפר בסבב V, V צעדים אחורה מגיעים בוודאות אל תוך המעגל עצמו. */
+/** From the node improved in round V, walking V steps back always lands inside the cycle. */
 function traceCycle(
   parent: Record<NodeId, NodeId | null>,
   from: NodeId,

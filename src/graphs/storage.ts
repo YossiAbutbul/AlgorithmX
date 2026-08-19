@@ -18,7 +18,7 @@ export function saveCustomGraph(moduleId: string, graph: GraphModel): void {
   try {
     ls.setItem(GRAPH_KEY(moduleId), JSON.stringify(graph));
   } catch {
-    /* מכסת אחסון מלאה, אין מה לעשות */
+    /* Storage quota is full, nothing to do */
   }
 }
 

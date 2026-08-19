@@ -2,7 +2,7 @@ const REPO_URL = 'https://github.com/YossiAbutbul/AlgorithmX';
 const OWNER = 'YossiAbutbul';
 const YEAR = 2026;
 
-/** סימן GitHub. lucide הסירה אייקוני מותגים, ולכן הוא מצויר כאן ישירות. */
+/** GitHub mark. lucide dropped brand icons, so it is drawn inline here. */
 function GithubMark() {
   return (
     <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -14,8 +14,8 @@ function GithubMark() {
 export function Footer() {
   return (
     <footer className="app-footer">
-      <div className="flex w-full items-center justify-between gap-2 px-4 py-1 text-[12px] leading-none">
-        <span className="flex items-baseline gap-2 text-[12px] leading-none">
+      <div className="flex w-full items-center justify-between gap-2 px-4 py-1 sm:py-0.5 text-[12px] leading-none">
+        <span className="flex items-baseline gap-2 whitespace-nowrap text-[12px] leading-none">
           <span
             className="tracking-tight"
             style={{ fontFamily: "'Secular One', sans-serif", direction: 'ltr' }}
@@ -24,13 +24,21 @@ export function Footer() {
             <span style={{ color: 'var(--accent)' }}>X</span>
           </span>
           <span className="num text-ink-soft" dir="ltr">
-            © {YEAR} {OWNER}
+            © {YEAR}
+            {/* The owner name is already in the link, so it drops on narrow screens */}
+            <span className="hidden sm:inline"> {OWNER}</span>
           </span>
         </span>
 
-        <a className="footer-link" href={REPO_URL} target="_blank" rel="noreferrer noopener">
+        <a
+          className="footer-link whitespace-nowrap"
+          href={REPO_URL}
+          target="_blank"
+          rel="noreferrer noopener"
+          aria-label={`${OWNER}/AlgorithmX on GitHub`}
+        >
           <GithubMark />
-          <span className="num" dir="ltr">
+          <span className="num hidden sm:inline" dir="ltr">
             {OWNER}/AlgorithmX
           </span>
         </a>

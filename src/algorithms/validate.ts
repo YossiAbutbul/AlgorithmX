@@ -5,7 +5,7 @@ export interface ValidationNote {
   level: 'warn' | 'error';
   text: string;
   suggestion?: string;
-  /** כפתור שמוביל לאלגוריתם שכן מתאים למקרה הזה. */
+  /** Button leading to an algorithm that does handle this case. */
   action?: { label: string; targetId: string };
 }
 
@@ -26,8 +26,8 @@ function componentOf(graph: GraphModel, start: NodeId): Set<NodeId> {
 }
 
 /**
- * ולידציה מלמדת ולא חוסמת. כל הודעה מסבירה מה נשבר ומה האפשרות החלופית,
- * וההרצה ממשיכה כדי שאפשר יהיה לראות את התוצאה השגויה בפועל.
+ * Teaching validation, never a hard block. Each note explains what broke and what the
+ * alternative is, and the run continues so the wrong result can be seen firsthand.
  */
 export function validateGraph(
   module: AlgorithmModule,

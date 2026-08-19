@@ -70,7 +70,7 @@ export function usePlayer(total: number, keyboard = true): Player {
       const target = e.target as HTMLElement | null;
       const tag = target?.tagName ?? '';
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      // רכיבים שמטפלים בעצמם בחצים: הטאבים ופס הצעדים
+      // Components that handle arrow keys themselves: the tablists and the step timeline
       if (target?.closest('[role="tablist"]') || target?.closest('[role="slider"]')) return;
       if (e.key === 'ArrowRight') {
         e.preventDefault();

@@ -28,7 +28,7 @@ function Box({
   );
 }
 
-/** Dijkstra: התוצאה השגויה בפועל, לצד הערך הנכון, וקישור ל-Bellman-Ford. */
+/** Dijkstra: the actual wrong result next to the correct value, plus a link to Bellman-Ford. */
 export function DijkstraNegativeInsight({ onNavigate }: { onNavigate: (id: string) => void }) {
   const { wrong, right } = useMemo(() => {
     const graph = negativeEdge();
@@ -82,7 +82,7 @@ export function DijkstraNegativeInsight({ onNavigate }: { onNavigate: (id: strin
   );
 }
 
-/** Edmonds-Karp: מונה איטרציות מול Ford-Fulkerson על אותן רשתות. */
+/** Edmonds-Karp: iteration counter against Ford-Fulkerson on the same networks. */
 export function FlowIterationInsight({ onCompare }: { onCompare: () => void }) {
   const rows = useMemo(() => {
     const nets = [

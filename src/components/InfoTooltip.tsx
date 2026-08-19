@@ -7,7 +7,7 @@ interface Props {
   children: ReactNode;
 }
 
-/** כפתור מידע קטן שפותח תיבה. נפתח בהצבעה, בלחיצה ובמקלדת, ונסגר ב-Escape. */
+/** Small info button that opens a popover. Opens on hover, click and focus, closes on Escape. */
 export function InfoTooltip({ label, children }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);

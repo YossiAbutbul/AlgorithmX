@@ -114,13 +114,13 @@ export interface Frame {
   aux: AuxView[];
   codeLine?: number;
   headline?: string;
-  /** קשתות שאריתיות פעילות ברשת זרימה, מצוירות מקווקו בכיוון ההפוך. */
+  /** Active residual arcs in a flow network, drawn dashed in the reverse direction. */
   residual?: { id: EdgeId; amount: number; active?: boolean }[];
-  /** צד המקור של החתך המינימלי, לציור קו החתך בסוף ההרצה. */
+  /** Source side of the minimum cut, used to draw the cut line at the end of the run. */
   cutNodes?: NodeId[];
-  /** הצלעות שחוצות את החתך המינימלי. */
+  /** The edges that cross the minimum cut. */
   cutEdges?: EdgeId[];
-  /** מסלול מודגש, למשל מסלול הגדלה או מעגל שלילי. */
+  /** A highlighted path, for example an augmenting path or a negative cycle. */
   pathEdges?: EdgeId[];
 }
 
@@ -187,7 +187,7 @@ export interface AlgorithmModule {
   presetGraphs: PresetGraph[];
   needsSource: boolean;
   needsSink?: boolean;
-  /** מציג מתג שמאפשר לראות גם צעדים שלא שינו כלום. */
+  /** Shows a toggle for displaying steps that changed nothing. */
   showNoChangeToggle?: boolean;
   run(graph: GraphModel, opts: RunOptions): Frame[];
   content: AlgorithmContent;

@@ -6,13 +6,13 @@ export type SectionId = 'idea' | 'run' | 'structures' | 'efficiency' | 'pitfalls
 export interface SectionDef {
   id: SectionId;
   label: string;
-  /** תווית מקוצרת למסכים צרים */
+  /** Short label for narrow screens */
   short: string;
   step?: number;
   Icon: LucideIcon;
 }
 
-/** חמשת החלקים בסדר קבוע, ואחריהם התרגול וההוכחה. */
+/** The five parts in fixed order, followed by practice and proof. */
 export const SECTIONS: SectionDef[] = [
   { id: 'idea', label: 'רעיון ומטרה', short: 'רעיון', step: 1, Icon: Lightbulb },
   { id: 'run', label: 'הרצה על גרף', short: 'הרצה', step: 2, Icon: Play },

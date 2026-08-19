@@ -13,7 +13,7 @@ import type {
 } from './types';
 import type { MstResult } from './prim';
 
-/** Union-Find עם union by rank ועם path compression. */
+/** Union-Find with union by rank and path compression. */
 export class DisjointSet {
   private parent: Record<NodeId, NodeId> = {};
   private rank: Record<NodeId, number> = {};
@@ -55,7 +55,7 @@ export class DisjointSet {
   }
 }
 
-/** מיון עולה לפי משקל, ובשוויון לפי מזהה הצלע. סדר קבוע ומוצהר. */
+/** Ascending by weight, ties broken by edge id. A fixed and declared order. */
 export function sortedEdges(graph: GraphModel): GraphEdge[] {
   return [...graph.edges].sort(
     (a, b) => a.weight - b.weight || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),

@@ -72,15 +72,15 @@ const BASE_EDGES_WEIGHTED: [NodeId, NodeId, number][] = [
   ['F', 'G', 6],
 ];
 
-/** הגרף הבסיסי המשותף, גרסה לא ממושקלת. שבעה צמתים A עד G. */
+/** The shared base graph, unweighted variant. Seven nodes, A through G. */
 export const baseUnweighted = (): GraphModel =>
   buildGraph({ directed: false, weighted: false }, BASE_NODES, BASE_EDGES_UNWEIGHTED);
 
-/** הגרף הבסיסי המשותף, גרסה ממושקלת. אותם צמתים ואותן צלעות. */
+/** The shared base graph, weighted variant. Same nodes and same edges. */
 export const baseWeighted = (): GraphModel =>
   buildGraph({ directed: false, weighted: true }, BASE_NODES, BASE_EDGES_WEIGHTED);
 
-/** BFS: הגילוי הראשון קובע, גם כשיש שרשרת ארוכה שמובילה לאותו צומת. */
+/** BFS: the first discovery wins, even when a long chain leads to the same node. */
 export const bfsShortcut = (): GraphModel =>
   buildGraph(
     { directed: false, weighted: false, width: 620, height: 340 },
@@ -102,7 +102,7 @@ export const bfsShortcut = (): GraphModel =>
     ],
   );
 
-/** DFS: גרף מכוון לסיווג צלעות. הצלע 5->2 היא back edge ומעידה על מעגל. */
+/** DFS: directed graph for edge classification. The edge 5->2 is a back edge and proves a cycle. */
 export const dfsDirected = (): GraphModel =>
   buildGraph(
     { directed: true, weighted: false },
@@ -124,7 +124,7 @@ export const dfsDirected = (): GraphModel =>
     ],
   );
 
-/** Dijkstra: כל המשקלים חיוביים, ויש בו שיפורי relax אמיתיים. */
+/** Dijkstra: all weights positive, with real relax improvements along the way. */
 export const dijkstraFocus = (): GraphModel =>
   buildGraph(
     { directed: true, weighted: true },
@@ -149,7 +149,7 @@ export const dijkstraFocus = (): GraphModel =>
     ],
   );
 
-/** Dijkstra: משקל שלילי אחד מספיק כדי לשבור את הנכונות. */
+/** Dijkstra: a single negative weight is enough to break correctness. */
 export const negativeEdge = (): GraphModel =>
   buildGraph(
     { directed: true, weighted: true, width: 480, height: 340 },
@@ -165,7 +165,7 @@ export const negativeEdge = (): GraphModel =>
     ],
   );
 
-/** Bellman-Ford: משקל שלילי בלי מעגל שלילי. */
+/** Bellman-Ford: a negative weight with no negative cycle. */
 export const bellmanFocus = (): GraphModel =>
   buildGraph(
     { directed: true, weighted: true },
@@ -187,7 +187,7 @@ export const bellmanFocus = (): GraphModel =>
     ],
   );
 
-/** Bellman-Ford: מעגל שלילי בסכום מינוס 2. */
+/** Bellman-Ford: a negative cycle summing to minus 2. */
 export const negativeCycle = (): GraphModel =>
   buildGraph(
     { directed: true, weighted: true, width: 520, height: 340 },
@@ -205,7 +205,7 @@ export const negativeCycle = (): GraphModel =>
     ],
   );
 
-/** Floyd-Warshall: ארבעה צמתים, מכוון וממושקל, עם זוגות אנטי מקבילים. */
+/** Floyd-Warshall: four nodes, directed and weighted, with antiparallel pairs. */
 export const floydFocus = (): GraphModel =>
   buildGraph(
     { directed: true, weighted: true, width: 560, height: 360 },
@@ -226,7 +226,7 @@ export const floydFocus = (): GraphModel =>
     ],
   );
 
-/** Prim ו-Kruskal: שני משקלים שווים, ולכן ה-MST אינו יחיד. */
+/** Prim and Kruskal: two equal weights, so the MST is not unique. */
 export const tieWeights = (): GraphModel =>
   buildGraph(
     { directed: false, weighted: true, width: 620, height: 340 },
@@ -244,7 +244,7 @@ export const tieWeights = (): GraphModel =>
     ],
   );
 
-/** רשת זרימה 100 מול 1: הרשת שמראה למה צריך צלע שאריתית. */
+/** Flow network 100 against 1: the network that shows why a residual edge is needed. */
 export const flowResidual = (): GraphModel =>
   buildGraph(
     { directed: true, weighted: true, flow: true, width: 560, height: 340 },
@@ -263,7 +263,7 @@ export const flowResidual = (): GraphModel =>
     ],
   );
 
-/** רשת זרימה קטנה: זרימה מקסימלית 3 וחתך מינימלי בקיבול 3. */
+/** Small flow network: maximum flow 3 and a minimum cut of capacity 3. */
 export const flowSmall = (): GraphModel =>
   buildGraph(
     { directed: true, weighted: true, flow: true, width: 540, height: 340 },

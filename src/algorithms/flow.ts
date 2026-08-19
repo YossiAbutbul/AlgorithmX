@@ -18,8 +18,8 @@ export interface FlowResult {
 }
 
 /**
- * קשתות הגרף השאריתי של צומת u, בסדר מוצהר:
- * קודם הצלעות הישירות לפי סדר רשימת הצלעות, ואחריהן הצלעות האחוריות באותו סדר.
+ * Residual arcs leaving node u, in a declared order:
+ * forward edges in edge list order first, then backward edges in the same order.
  */
 export function residualArcs(
   graph: GraphModel,
@@ -56,7 +56,7 @@ export interface SearchResult {
   parentOf: Record<NodeId, string>;
 }
 
-/** חיפוש לעומק על הגרף השאריתי, בסדר הצלעות המוצהר. זו הבחירה של Ford-Fulkerson. */
+/** Depth first search on the residual graph, in the declared edge order. This is what Ford-Fulkerson picks. */
 export function dfsAugmenting(
   graph: GraphModel,
   s: NodeId,
@@ -86,7 +86,7 @@ export function dfsAugmenting(
   return { path: found ? path : null, visited, parentOf };
 }
 
-/** חיפוש לרוחב על הגרף השאריתי, ולכן תמיד המסלול עם מספר הקשתות הקטן ביותר. */
+/** Breadth first search on the residual graph, so always the path with the fewest edges. */
 export function bfsAugmenting(
   graph: GraphModel,
   s: NodeId,

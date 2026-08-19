@@ -38,13 +38,13 @@ export function App() {
   }, [tab]);
 
   /**
-   * גבהי שתי הכותרות הדביקות נמדדים בפועל: הפס העליון נדבק לכותרת בלי רווח,
-   * והגלילה יודעת כמה מקום הן תופסות כדי לא להסתיר תוכן מתחתן.
+   * Both fixed bar heights are measured live: the section bar docks to the header with
+   * no seam, and scrolling knows how much space they take so content stays visible.
    */
   useLayoutEffect(() => {
     const measureBar = (el: HTMLElement | null, name: string) => {
       if (!el) return undefined;
-      // בלי עיגול: גובה שבור מייצר תפר של פיקסל בין שתי הכותרות
+      // No rounding: a fractional height opens a one pixel seam between the two bars
       const apply = () =>
         document.documentElement.style.setProperty(
           name,
@@ -57,7 +57,7 @@ export function App() {
       return ro;
     };
     const roHeader = measureBar(headerRef.current, '--header-h');
-    // בטאבים שאין בהם פס חלקים, הגובה מתאפס כדי שהתוכן לא יקבל ריווח מיותר
+    // Tabs without a section bar reset the height so content gets no extra offset
     if (!subBarRef.current) document.documentElement.style.setProperty('--subbar-h', '0px');
     const roSub = measureBar(subBarRef.current, '--subbar-h');
     return () => {
@@ -66,7 +66,7 @@ export function App() {
     };
   }, [tab]);
 
-  /** גובה שתי הכותרות יחד, בפיקסלים. */
+  /** Combined height of both fixed bars, in pixels. */
   const stickyOffset = useCallback(() => {
     const read = (name: string) =>
       parseInt(getComputedStyle(document.documentElement).getPropertyValue(name), 10) || 0;
@@ -143,7 +143,7 @@ export function App() {
     go(ALL_IDS[Math.max(0, Math.min(ALL_IDS.length - 1, i + delta))]);
   }
 
-  /** מעבר בין חלקים מיישר את ראש הפאנל מתחת לכותרות, כדי שלא ייחתך מאחוריהן. */
+  /** Switching sections aligns the panel top below the bars so it is not clipped. */
   function selectSection(id: SectionId) {
     setSection(id);
     requestAnimationFrame(() => {
@@ -194,7 +194,7 @@ export function App() {
       <ScrollOverlay />
 
       <header ref={headerRef} className="app-header">
-        <div className="flex items-center gap-2 px-3 sm:gap-3 sm:px-4 lg:px-6">
+        <div className="flex items-center gap-3 px-3 sm:gap-5 sm:px-4 lg:px-6">
           <div className="order-2 flex h-[56px] shrink-0 items-center sm:h-[68px]">
             <Brand onClick={() => go(ALGORITHMS[0].id)} />
           </div>
@@ -212,9 +212,9 @@ export function App() {
                 overflowing
                   ? {
                       maskImage:
-                        'linear-gradient(to left, #000 calc(100% - 28px), transparent)',
+                        'linear-gradient(to left, #000 calc(100% - 12px), transparent)',
                       WebkitMaskImage:
-                        'linear-gradient(to left, #000 calc(100% - 28px), transparent)',
+                        'linear-gradient(to left, #000 calc(100% - 12px), transparent)',
                     }
                   : undefined
               }

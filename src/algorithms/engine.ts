@@ -12,7 +12,7 @@ import type {
 
 export const INF = Number.POSITIVE_INFINITY;
 
-/** מפתח צלע יציב. בגרף לא מכוון: מיון לקסיקוגרפי של שני הקצוות. */
+/** Stable edge key. In an undirected graph the two endpoints are sorted lexicographically. */
 export function edgeIdOf(directed: boolean, from: NodeId, to: NodeId): EdgeId {
   if (directed) return `${from}->${to}`;
   return [from, to].sort().join('-');
@@ -26,7 +26,7 @@ export function nodeIds(graph: GraphModel): NodeId[] {
   return graph.nodes.map((n) => n.id);
 }
 
-/** רשימת שכנויות דטרמיניסטית: השכנים ממוינים לפי סדר אלפביתי של המזהה. */
+/** Deterministic adjacency list: neighbors sorted alphabetically by id. */
 export function adjacency(graph: GraphModel): Map<NodeId, { to: NodeId; edge: GraphEdge }[]> {
   const map = new Map<NodeId, { to: NodeId; edge: GraphEdge }[]>();
   for (const n of graph.nodes) map.set(n.id, []);
@@ -68,8 +68,8 @@ export interface EmitInput {
 }
 
 /**
- * צובר frames. כל אלגוריתם משנה את מצבי הצמתים והצלעות דרך המחלקה הזו
- * ומפיק frame בכל נקודת עניין. ה-UI רק מציג frame לפי אינדקס.
+ * Frame accumulator. Every algorithm mutates node and edge states through this class
+ * and emits a frame at each point of interest. The UI only renders a frame by index.
  */
 export class FrameBuilder {
   private frames: Frame[] = [];

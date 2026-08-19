@@ -9,7 +9,7 @@ interface BfsResult {
   order: NodeId[];
 }
 
-/** מנוע חישוב טהור, בלי frames. משמש גם את הבדיקות. */
+/** Pure computation, no frames. Also used by the tests. */
 export function bfsCompute(graph: GraphModel, source: NodeId): BfsResult {
   const adj = adjacency(graph);
   const dist: Record<NodeId, number> = {};

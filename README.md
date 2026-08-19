@@ -8,6 +8,8 @@ queue, updates the distance array and closes in on the answer.
 
 **[Open the site](https://algorithmx.abyossi22.workers.dev/)**
 
+![BFS running step by step](docs/screenshots/run-bfs.png)
+
 ---
 
 ## What you get
@@ -35,10 +37,18 @@ Four prepared pairs, each teaching one specific thing:
 - Prim against Kruskal: two build orders, the same total weight
 - Ford-Fulkerson against Edmonds-Karp: four iterations against two
 
+![BFS and DFS side by side on the same graph](docs/screenshots/compare.png)
+
+**Know when an algorithm is the wrong tool.**
+Feed Dijkstra a negative edge and the site does not hide it. It warns you, offers to switch to
+Bellman-Ford, and if you run it anyway you watch it close a node on the wrong value and never
+come back to fix it.
+
+![Dijkstra warned about a negative weight](docs/screenshots/dijkstra-negative.png)
+
 **Build your own graph.**
 Add nodes, drag them, connect them, set weights. Save it to your browser, export it as JSON, share
-it. And when your graph breaks an algorithm assumption, the site says so and offers to run it
-anyway, so you can see the wrong answer with your own eyes.
+it, and run any of the nine on it.
 
 **Practice like it is an exam.**
 Every algorithm ships with pitfalls, an exam tips box, and practice questions with revealed
@@ -62,6 +72,14 @@ stays calm.
 | Edmonds-Karp | Maximum flow with a bound that holds | `O(V*E^2)` |
 
 They are ordered by what you need to know first, and every tab tells you which one that is.
+
+![The summary table of all nine algorithms](docs/screenshots/table.png)
+
+## On a phone
+
+The same site, with the graph large enough to read and the whole run still one thumb away.
+
+<img src="docs/screenshots/mobile.png" alt="AlgorithmX on a narrow screen" width="330">
 
 ---
 

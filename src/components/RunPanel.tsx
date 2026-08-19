@@ -199,16 +199,18 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
         />
       )}
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_310px]">
-        <div className="flex flex-col gap-3">
-          <div className="card-quiet overflow-hidden bg-sunken p-2">
-            <GraphCanvas
-              graph={graph}
-              frame={frame}
-              hoveredNode={hovered}
-              onHoverNode={setHovered}
-              ariaLabel={`הרצת ${module.shortHe} על הגרף`}
-            />
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_310px]">
+        <div className="flex min-w-0 flex-col gap-3">
+          <div className="card-quiet scroll-x min-w-0 bg-sunken p-2" dir="ltr">
+            <div className="min-w-[480px] sm:min-w-0">
+              <GraphCanvas
+                graph={graph}
+                frame={frame}
+                hoveredNode={hovered}
+                onHoverNode={setHovered}
+                ariaLabel={`הרצת ${module.shortHe} על הגרף`}
+              />
+            </div>
           </div>
 
           <p

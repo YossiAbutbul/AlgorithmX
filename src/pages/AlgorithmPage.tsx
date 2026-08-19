@@ -1,7 +1,5 @@
 import {
   Boxes,
-  ChevronLeft,
-  ChevronRight,
   Gauge,
   GraduationCap,
   Lightbulb,
@@ -62,10 +60,6 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
   const prereqs = module.requires
     .map((id) => all.find((m) => m.id === id))
     .filter((m): m is AlgorithmModule => !!m);
-
-  const index = all.findIndex((m) => m.id === module.id);
-  const prev = index > 0 ? all[index - 1] : null;
-  const next = index >= 0 && index < all.length - 1 ? all[index + 1] : null;
 
   return (
     <article className="flex flex-col">
@@ -234,21 +228,6 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
           </>
         )}
       </div>
-
-      <nav className="mt-6 flex flex-wrap items-center gap-2" aria-label="מעבר בין אלגוריתמים">
-        {prev && (
-          <button className="btn" onClick={() => onNavigate(prev.id)}>
-            <ChevronRight size={16} aria-hidden="true" />
-            הקודם: {prev.shortHe}
-          </button>
-        )}
-        {next && (
-          <button className="btn ms-auto" onClick={() => onNavigate(next.id)}>
-            הבא: {next.shortHe}
-            <ChevronLeft size={16} aria-hidden="true" />
-          </button>
-        )}
-      </nav>
     </article>
   );
 }

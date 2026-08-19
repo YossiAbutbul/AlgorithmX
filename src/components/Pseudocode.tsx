@@ -9,11 +9,11 @@ interface Props {
 export function Pseudocode({ lines, activeLine }: Props) {
   return (
     <Accordion summary="הצג פסאודו-קוד" icon={Code}>
-      <p className="mb-2 text-[var(--step-1)] text-ink-soft">
+      <p className="mb-2 text-[length:var(--step-1)] text-ink-soft">
         השורה המודגשת היא השורה שמתאימה לצעד הנוכחי בהרצה.
       </p>
       <div className="scroll-x rounded-lg bg-sunken">
-      <ol dir="ltr" className="inline-block min-w-full text-[var(--step-2)]">
+      <ol dir="ltr" className="inline-block min-w-full text-[length:var(--step-2)]">
         {lines.map((line, i) => {
           const active = i === activeLine;
           return (

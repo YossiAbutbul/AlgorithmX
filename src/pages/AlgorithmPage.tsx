@@ -71,10 +71,10 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
     <article className="flex flex-col">
       <header className="flex flex-col gap-3 pb-4 pt-6">
         <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="text-[var(--step-5)]">{module.titleHe}</h1>
+          <h1 className="text-[length:var(--step-5)]">{module.titleHe}</h1>
           {prereqs.length > 0 && (
             <InfoTooltip label="מה צריך לדעת לפני">
-              <p className="mb-2 text-[var(--step-1)] font-bold text-ink-soft">
+              <p className="mb-2 text-[length:var(--step-1)] font-bold text-ink-soft">
                 מה צריך לדעת לפני
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -126,9 +126,9 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
       >
         {active === 'idea' && (
           <Section step={1} title="רעיון ומטרה" icon={Lightbulb}>
-            <p className="max-w-[68ch] text-[var(--step-3)]">{module.content.idea}</p>
+            <p className="max-w-[68ch] text-[length:var(--step-3)]">{module.content.idea}</p>
             <hr className="hairline" />
-            <h3 className="mb-2 text-[var(--step-3)]">מתי משתמשים</h3>
+            <h3 className="mb-2 text-[length:var(--step-3)]">מתי משתמשים</h3>
             <Bullets items={module.content.whenToUse} />
           </Section>
         )}
@@ -150,8 +150,8 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {module.content.structures.map((s) => (
                 <div key={s.name} className="card-quiet p-3">
-                  <h3 className="num mb-1 text-[var(--step-3)]">{s.name}</h3>
-                  <p className="text-[var(--step-2)] text-ink-soft">{s.role}</p>
+                  <h3 className="num mb-1 text-[length:var(--step-3)]">{s.name}</h3>
+                  <p className="text-[length:var(--step-2)] text-ink-soft">{s.role}</p>
                 </div>
               ))}
             </div>
@@ -162,14 +162,14 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
           <Section step={4} title="יעילות" icon={Gauge}>
             <div className="mb-4 flex flex-wrap gap-3">
               <div className="card-quiet flex-1 px-4 py-3">
-                <p className="text-[var(--step-1)] text-ink-soft">זמן</p>
-                <p className="num text-[var(--step-4)]" style={{ color: 'var(--accent)' }}>
+                <p className="text-[length:var(--step-1)] text-ink-soft">זמן</p>
+                <p className="num text-[length:var(--step-4)]" style={{ color: 'var(--accent)' }}>
                   {module.content.efficiency.time}
                 </p>
               </div>
               <div className="card-quiet flex-1 px-4 py-3">
-                <p className="text-[var(--step-1)] text-ink-soft">זיכרון</p>
-                <p className="num text-[var(--step-4)]" style={{ color: 'var(--accent)' }}>
+                <p className="text-[length:var(--step-1)] text-ink-soft">זיכרון</p>
+                <p className="num text-[length:var(--step-4)]" style={{ color: 'var(--accent)' }}>
                   {module.content.efficiency.space}
                 </p>
               </div>
@@ -190,7 +190,7 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
                     style={{ color: 'var(--state-frontier)' }}
                   />
                   <div>
-                    <h3 className="text-[var(--step-3)]">{p.title}</h3>
+                    <h3 className="text-[length:var(--step-3)]">{p.title}</h3>
                     <p className="text-ink-soft">{p.body}</p>
                   </div>
                 </li>
@@ -198,14 +198,14 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
             </ul>
             <hr className="hairline" />
             <p
-              className="rounded-card px-4 py-3 text-[var(--step-3)]"
+              className="rounded-card px-4 py-3 text-[length:var(--step-3)]"
               style={{ background: 'var(--accent-soft)', color: 'var(--ink)' }}
             >
               <b>השורה התחתונה: </b>
               {module.content.bottomLine}
             </p>
             <div className="card-quiet mt-3 bg-sunken p-3">
-              <h3 className="mb-1.5 flex items-center gap-2 text-[var(--step-3)]">
+              <h3 className="mb-1.5 flex items-center gap-2 text-[length:var(--step-3)]">
                 <GraduationCap size={18} aria-hidden="true" style={{ color: 'var(--accent)' }} />
                 איך זה נשאל במבחן
               </h3>

@@ -194,13 +194,13 @@ export function App() {
       <ScrollOverlay />
 
       <header ref={headerRef} className="app-header">
-        <div className="flex flex-col px-4 sm:flex-row sm:items-center sm:gap-4 lg:px-6">
-          <div className="order-1 flex h-[54px] shrink-0 items-center justify-end sm:order-2 sm:h-[68px]">
+        <div className="flex items-center gap-2 px-3 sm:gap-3 sm:px-4 lg:px-6">
+          <div className="order-2 flex h-[56px] shrink-0 items-center sm:h-[68px]">
             <Brand onClick={() => go(ALGORITHMS[0].id)} />
           </div>
 
           <nav
-            className="order-2 flex h-[54px] min-w-0 flex-1 items-center sm:order-1 sm:h-[68px]"
+            className="order-1 flex h-[56px] min-w-0 flex-1 items-center sm:h-[68px]"
             aria-label="ניווט בין אלגוריתמים"
           >
             <div
@@ -271,7 +271,8 @@ export function App() {
                 <span className="subtab-index" aria-hidden="true">
                   {s.step ?? <s.Icon size={13} />}
                 </span>
-                {s.label}
+                <span className="sm:hidden">{s.short}</span>
+                <span className="hidden sm:inline">{s.label}</span>
               </button>
             ))}
           </div>

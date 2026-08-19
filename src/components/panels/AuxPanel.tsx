@@ -49,7 +49,7 @@ export function AuxPanel({ views, hovered, onHover }: Props) {
     <div className="flex flex-col gap-3">
       {views.map((view, i) => (
         <section key={`${view.kind}-${i}`} className="card-quiet p-3">
-          <h4 className="mb-2 text-[var(--step-2)] text-ink-soft">{view.title}</h4>
+          <h4 className="mb-2 text-[length:var(--step-2)] text-ink-soft">{view.title}</h4>
           {renderView(view, hovered, onHover)}
         </section>
       ))}

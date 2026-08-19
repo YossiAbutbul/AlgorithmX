@@ -14,14 +14,14 @@ export function ArrayTable({
   return (
     <div>
       <div className="scroll-x">
-        <table className="w-full border-collapse text-[var(--step-2)]">
+        <table className="w-full border-collapse text-[length:var(--step-2)]">
           <thead>
             <tr>
               {view.columns.map((c) => (
                 <th
                   key={c}
                   scope="col"
-                  className="num border-b border-line px-2 py-1 text-start text-[var(--step-1)] font-semibold text-ink-soft"
+                  className="num border-b border-line px-2 py-1 text-start text-[length:var(--step-1)] font-semibold text-ink-soft"
                 >
                   {c}
                 </th>
@@ -63,7 +63,7 @@ export function ArrayTable({
           </tbody>
         </table>
       </div>
-      {view.note && <p className="mt-1 text-[var(--step-1)] text-ink-soft">{view.note}</p>}
+      {view.note && <p className="mt-1 text-[length:var(--step-1)] text-ink-soft">{view.note}</p>}
     </div>
   );
 }

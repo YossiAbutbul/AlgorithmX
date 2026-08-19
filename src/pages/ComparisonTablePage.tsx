@@ -29,7 +29,7 @@ export function ComparisonTablePage({ onNavigate }: { onNavigate: (id: string) =
   return (
     <div className="flex flex-col gap-4">
       <header>
-        <h1 className="text-[var(--step-5)]">הכל במקום אחד</h1>
+        <h1 className="text-[length:var(--step-5)]">הכל במקום אחד</h1>
         <p className="text-ink-soft">
           תשעת האלגוריתמים בשורה אחת כל אחד. לחיצה על כותרת עמודה ממיינת, ולחיצה על שורה פותחת את
           הטאב המתאים.
@@ -38,7 +38,7 @@ export function ComparisonTablePage({ onNavigate }: { onNavigate: (id: string) =
 
       <div className="card hidden overflow-hidden p-0 md:block">
         <div className="scroll-x">
-          <table className="w-full border-collapse text-[var(--step-2)]">
+          <table className="w-full border-collapse text-[length:var(--step-2)]">
             <thead>
               <tr>
                 {COMPARISON_COLUMNS.map((c) => (
@@ -109,12 +109,12 @@ export function ComparisonTablePage({ onNavigate }: { onNavigate: (id: string) =
             className="card p-3 text-start"
             onClick={() => onNavigate(r.id)}
           >
-            <h2 className="num mb-1 flex items-center gap-1 text-[var(--step-4)]">
+            <h2 className="num mb-1 flex items-center gap-1 text-[length:var(--step-4)]">
               {r.name}
               <ChevronLeft size={18} aria-hidden="true" style={{ color: 'var(--accent)' }} />
             </h2>
             <p className="mb-2">{r.solves}</p>
-            <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-[var(--step-1)]">
+            <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-[length:var(--step-1)]">
               {COMPARISON_COLUMNS.filter((c) => c.key !== 'name' && c.key !== 'solves').map((c) => (
                 <div key={c.key} className="flex gap-1">
                   <dt className="text-ink-soft">{c.label}:</dt>

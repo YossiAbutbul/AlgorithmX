@@ -104,7 +104,7 @@ export function StepTimeline({ frames, index, onSeek }: Props) {
           );
         })}
       </div>
-      <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[var(--step-1)] text-ink-soft">
+      <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[length:var(--step-1)] text-ink-soft">
         {used.map((ev) => (
           <span key={ev} className="flex items-center gap-1">
             <span

@@ -6,20 +6,20 @@ export function FlowTable({ view }: { view: F }) {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between rounded-lg bg-sunken px-3 py-1.5">
-        <span className="text-[var(--step-2)] font-semibold">זרימה כוללת</span>
-        <span className="num text-[var(--step-4)] font-bold" style={{ color: 'var(--state-done)' }}>
+        <span className="text-[length:var(--step-2)] font-semibold">זרימה כוללת</span>
+        <span className="num text-[length:var(--step-4)] font-bold" style={{ color: 'var(--state-done)' }}>
           {view.totalFlow}
         </span>
       </div>
       <div className="scroll-x">
-        <table className="w-full border-collapse text-[var(--step-2)]">
+        <table className="w-full border-collapse text-[length:var(--step-2)]">
           <thead>
             <tr>
               {['צלע', 'flow / cap', 'ניצול'].map((c) => (
                 <th
                   key={c}
                   scope="col"
-                  className="border-b border-line px-2 py-1 text-start text-[var(--step-1)] font-semibold text-ink-soft"
+                  className="border-b border-line px-2 py-1 text-start text-[length:var(--step-1)] font-semibold text-ink-soft"
                 >
                   {c}
                 </th>
@@ -43,7 +43,7 @@ export function FlowTable({ view }: { view: F }) {
                         background: full ? 'var(--state-done)' : 'var(--state-frontier)',
                       }}
                     />
-                    {full && <span className="num ms-1 text-[var(--step-1)]">רוויה</span>}
+                    {full && <span className="num ms-1 text-[length:var(--step-1)]">רוויה</span>}
                   </td>
                 </tr>
               );
@@ -51,7 +51,7 @@ export function FlowTable({ view }: { view: F }) {
           </tbody>
         </table>
       </div>
-      {view.note && <p className="mt-1 text-[var(--step-1)] text-ink-soft">{view.note}</p>}
+      {view.note && <p className="mt-1 text-[length:var(--step-1)] text-ink-soft">{view.note}</p>}
     </div>
   );
 }

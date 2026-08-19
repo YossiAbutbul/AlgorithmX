@@ -17,7 +17,7 @@ export function Section({ step, title, subtitle, id, icon: Icon, children }: Pro
       <header className="mb-4 flex items-center gap-3">
         {(step !== undefined || Icon) && (
           <span
-            className="num flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[var(--step-2)] font-bold"
+            className="num flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[length:var(--step-2)] font-bold"
             style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}
             aria-hidden="true"
           >
@@ -25,13 +25,13 @@ export function Section({ step, title, subtitle, id, icon: Icon, children }: Pro
           </span>
         )}
         <div>
-          <h2 className="flex items-baseline gap-2 text-[var(--step-4)]">
+          <h2 className="flex items-baseline gap-2 text-[length:var(--step-4)]">
             {step !== undefined && (
-              <span className="num text-[var(--step-1)] text-ink-soft">חלק {step}</span>
+              <span className="num text-[length:var(--step-1)] text-ink-soft">חלק {step}</span>
             )}
             {title}
           </h2>
-          {subtitle && <p className="text-[var(--step-1)] text-ink-soft">{subtitle}</p>}
+          {subtitle && <p className="text-[length:var(--step-1)] text-ink-soft">{subtitle}</p>}
         </div>
       </header>
       {children}
@@ -52,7 +52,7 @@ export function Accordion({
 }) {
   return (
     <details id={id} className="card-quiet group overflow-hidden">
-      <summary className="flex cursor-pointer items-center gap-2 px-4 py-2.5 text-[var(--step-2)] font-semibold">
+      <summary className="flex cursor-pointer items-center gap-2 px-4 py-2.5 text-[length:var(--step-2)] font-semibold">
         <ChevronDown
           size={17}
           aria-hidden="true"

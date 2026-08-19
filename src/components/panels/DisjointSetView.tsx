@@ -22,7 +22,7 @@ export function DisjointSetView({
                 key={id}
                 onMouseEnter={() => onHover?.(id)}
                 onMouseLeave={() => onHover?.(null)}
-                className="num text-[var(--step-2)] font-semibold"
+                className="num text-[length:var(--step-2)] font-semibold"
               >
                 {id}
               </span>
@@ -30,7 +30,7 @@ export function DisjointSetView({
           </span>
         ))}
       </div>
-      {view.note && <p className="mt-1 text-[var(--step-1)] text-ink-soft">{view.note}</p>}
+      {view.note && <p className="mt-1 text-[length:var(--step-1)] text-ink-soft">{view.note}</p>}
     </div>
   );
 }

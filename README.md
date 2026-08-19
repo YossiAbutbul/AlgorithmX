@@ -1,101 +1,120 @@
 # AlgorithmX
 
-אתר לימוד עברי (RTL) לתשעה אלגוריתמים על גרפים, עם הרצה אינטראקטיבית צעד אחר צעד על גרף מצויר,
-לצד מבני הנתונים ומערכי העזר שמתעדכנים בזמן אמת.
+**Nine graph algorithms, one step at a time.**
 
-סדר הטאבים לפי תלות לוגית:
-`BFS -> DFS -> Dijkstra -> Bellman-Ford -> Floyd-Warshall -> Prim -> Kruskal -> Ford-Fulkerson -> Edmonds-Karp`,
-ואחריהם טבלת השוואה מסכמת ומצב השוואה זו לצד זו.
+An interactive Hebrew learning site that turns graph algorithms from something you memorize into
+something you watch happen. Press play and follow the algorithm as it colors the graph, fills the
+queue, updates the distance array and closes in on the answer.
 
-## הרצה
+**[Open the site](https://algorithmx.abyossi22.workers.dev/)**
+
+---
+
+## What you get
+
+**See the algorithm run, not just its result.**
+Every step colors the node and the edge that changed, and explains in one sentence what just
+happened and why. Step forward, step back, jump anywhere, or let it play at your own pace.
+
+**Watch the data structures fill up.**
+The queue, the stack, the priority queue, the distance array, the matrix, the sorted edge list, the
+Union-Find groups and the flow table all update alongside the graph. Hover a row and the matching
+node lights up.
+
+**The step timeline.**
+A thin bar under the graph where every step is a mark, colored by what happened: a discovery, an
+improvement, a rejection, an augmentation. You can see the whole rhythm of the algorithm at a
+glance, and drag along it to travel through time. Put two timelines side by side and the difference
+between two algorithms becomes obvious before you read a single line.
+
+**Compare two algorithms on the same graph.**
+Four prepared pairs, each teaching one specific thing:
+
+- BFS against DFS: a wide tree against a deep one
+- Dijkstra against Bellman-Ford: exactly where Dijkstra locks in a wrong answer
+- Prim against Kruskal: two build orders, the same total weight
+- Ford-Fulkerson against Edmonds-Karp: four iterations against two
+
+**Build your own graph.**
+Add nodes, drag them, connect them, set weights. Save it to your browser, export it as JSON, share
+it. And when your graph breaks an algorithm assumption, the site says so and offers to run it
+anyway, so you can see the wrong answer with your own eyes.
+
+**Practice like it is an exam.**
+Every algorithm ships with pitfalls, an exam tips box, and practice questions with revealed
+solutions. Pseudocode and correctness proofs are one click away, hidden by default so the screen
+stays calm.
+
+---
+
+## The nine
+
+| Algorithm | Solves | Time |
+| --- | --- | --- |
+| BFS | Shortest path in number of edges | `O(V+E)` |
+| DFS | Edge classification, cycles, topological sort | `O(V+E)` |
+| Dijkstra | Shortest paths from one source | `O((V+E) log V)` |
+| Bellman-Ford | Shortest paths with negative weights | `O(V*E)` |
+| Floyd-Warshall | Shortest paths between all pairs | `O(V^3)` |
+| Prim | Minimum spanning tree, growing one tree | `O(E log V)` |
+| Kruskal | Minimum spanning tree, sorting edges | `O(E log E)` |
+| Ford-Fulkerson | Maximum flow and minimum cut | `O(E * maxFlow)` |
+| Edmonds-Karp | Maximum flow with a bound that holds | `O(V*E^2)` |
+
+They are ordered by what you need to know first, and every tab tells you which one that is.
+
+---
+
+## Built to be trusted
+
+Every algorithm is a pure function: give it a graph, get back the full list of steps. Nothing is
+animated by hand, so what you see is what the algorithm actually did.
+
+Every choice the algorithm makes freely, such as the order of neighbors or how ties are broken, is
+fixed and stated on screen. That is usually the exact detail an exam question turns on.
+
+A test suite pins the expected result of all nine, including one test that deliberately preserves
+Dijkstra returning the wrong answer on a negative edge, so the teaching example can never quietly
+break.
+
+---
+
+## Run it yourself
 
 ```bash
 npm install
 npm run dev
 ```
 
-פקודות נוספות:
+Other commands:
 
 ```bash
-npm run build        # בנייה סטטית לתיקיית dist
-npm run preview      # הצגת הבנייה
-npm test             # בדיקות vitest
-npm run check:dashes # נכשל אם נמצא em-dash או en-dash
-npm run verify       # שלושתם יחד: מקפים, טיפוסים, בדיקות
+npm run build    # static site into dist
+npm test         # run the test suite
+npm run verify   # style check, types and tests together
 ```
 
-אין backend. התוצר הוא אתר סטטי לחלוטין.
+No backend, no database, no accounts. The build is a folder of static files you can host anywhere.
 
-## הארכיטקטורה בשורה אחת
+---
 
-כל אלגוריתם הוא **פונקציה טהורה** שמקבלת גרף ומחזירה מערך של `Frame`, וה-UI רק מציג frame לפי
-אינדקס. מכאן שהצעד קדימה, הצעד אחורה, הגרירה על פס הצעדים וההשוואה זו לצד זו עובדים בלי קוד נוסף.
+## Under the hood
 
-```
-src/
-  algorithms/   types.ts, engine.ts, validate.ts, מודול לכל אלגוריתם, index.ts כרגיסטרי
-  content/      הטקסטים בעברית, הפסאודו-קוד, ההוכחה, המלכודות ושאלות התרגול
-  graphs/       presets.ts (הגרפים המוכנים), storage.ts (localStorage וייצוא JSON)
-  components/   GraphCanvas, GraphEditor, StepControls, StepTimeline, panels/*, Section, Quiz
-  pages/        AlgorithmPage, ComparisonTablePage, ComparePage
-  theme/        tokens.css
-```
+Vite, React and TypeScript, styled with Tailwind. The graph rendering is hand written SVG: no
+charting library, no animation library, no dependencies beyond React and an icon set.
 
-## איך מוסיפים אלגוריתם חדש
+Adding a tenth algorithm means writing a `run(graph)` function that returns steps, a content file
+with the Hebrew text, and one line in the registry. See `src/algorithms/bfs.ts` for the smallest
+complete example.
 
-1. **תוכן**: צור `src/content/<id>.content.ts` שמייצא אובייקט `AlgorithmContent`: רעיון, מתי
-   משתמשים, מבני נתונים, יעילות, מלכודות, שורה תחתונה, טיפים למבחן, פסאודו-קוד, הוכחה ושאלות תרגול.
-2. **גרפים**: הוסף ל-`src/graphs/presets.ts` פונקציה שמחזירה `GraphModel` דרך `buildGraph`. תן
-   מיקומים קבועים שאין בהם חיתוכי צלעות.
-3. **מנוע**: צור `src/algorithms/<id>.ts` עם שתי פונקציות. אחת טהורה לחישוב התוצאה בלבד, לשימוש
-   הבדיקות, ואחת `run(graph, opts): Frame[]` שבונה frames דרך `FrameBuilder`:
+### Writing rules for contributors
 
-   ```ts
-   const b = new FrameBuilder(graph);
-   b.setNode(u, 'current');
-   b.setEdge(edge.id, 'tree');
-   b.emit({ event: 'discover', message: '...', aux: [...], codeLine: 7 });
-   return b.build();
-   ```
+- Never use the em-dash or en-dash characters anywhere in the project, including commit messages.
+  Use a regular hyphen, a comma or a separate sentence. `npm run check:dashes` fails the build if
+  one slips in.
+- Interface text is Hebrew, code and identifiers are English.
+- Algorithm names, data structure names and complexity notation stay in English inside Hebrew text.
 
-   כל frame חייב לכלול מצב לכל צומת ולכל צלע, וה-frame האחרון חייב להיות `done`.
-4. **מודול**: ייצא `AlgorithmModule` עם `id`, `titleHe`, `requires`, `graphKind`, `presetGraphs`
-   ו-`content`.
-5. **רגיסטרי**: הוסף אותו ל-`ALGORITHMS` ב-`src/algorithms/index.ts`, במקום הנכון לפי סדר התלות.
-6. **בדיקה**: הוסף ל-`src/algorithms/algorithms.test.ts` בדיקה שמאמתת את התוצאה הצפויה. בדיקת
-   המסגרת הכללית תרוץ עליו אוטומטית.
-7. **טבלת ההשוואה**: הוסף שורה ב-`src/content/comparison.ts`, ואם רלוונטי גם זוג ל-`COMPARE_PAIRS`.
+---
 
-## כללי כתיבה
-
-- **אסור** להשתמש בתו em-dash (U+2014) או en-dash (U+2013) בשום מקום: לא בקוד, לא בהערות, לא
-  בטקסט העברי ולא ב-commit messages. השתמש במקף רגיל, בפסיק, בנקודתיים או במשפט נפרד.
-  `npm run check:dashes` נכשל אם נמצא אחד מהם.
-- כל תוכן המשתמש בעברית, וכל שמות המשתנים והקוד באנגלית.
-- שמות אלגוריתמים, מבני נתונים ומונחי סיבוכיות נשארים באנגלית גם בתוך טקסט עברי.
-
-## דטרמיניזם
-
-בכל מקום שיש בו חופש בחירה, ההחלטה קבועה ומוצהרת בטאב עצמו: סריקת שכנים בסדר אלפביתי, שוויון
-מפתחות בתור עדיפויות נשבר לפי המזהה הקטן, מיון צלעות ב-Kruskal לפי משקל ואז לפי מזהה הצלע, ובחירת
-מסלול הגדלה לפי סדר רשימת הצלעות (קודם ישירות ואחר כך אחוריות).
-
-## שפת הצבע
-
-ארבעה מצבים, אותה משמעות בכל תשעת האלגוריתמים, ולכל מצב יש גם צורה או תווית ולא רק צבע:
-
-| מצב | משמעות | סימון |
-| --- | --- | --- |
-| `idle` | לא נתגלה | לבן עם קו אפור |
-| `frontier` | ממתין במבנה הנתונים | ענבר עם נקודה |
-| `current` | מטופל עכשיו | אדום ורוד עם טבעת כפולה |
-| `done` | סופי | טורקיז עם סימן וי |
-| `rejected` | נבדק ונדחה | אפור מקווקו עם איקס |
-
-הסגול שמור לזהות האתר ולפעולות בלבד, ולעולם לא למצבי גרף.
-
-## נגישות
-
-`dir="rtl"` ברמת הדף, תכונות לוגיות במקום left ו-right, מיקוד מקלדת נראה, `aria-live` על שורת
-הסבר הצעד, טאבים תקניים לפי `role="tablist"`, וכיבוי מלא של ניגון אוטומטי ושל transitions כאשר
-המשתמש ביקש `prefers-reduced-motion`.
+Built by [YossiAbutbul](https://github.com/YossiAbutbul).

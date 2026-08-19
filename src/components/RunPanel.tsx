@@ -65,7 +65,7 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="flex items-center gap-1.5 text-[var(--step-1)] font-bold text-ink-soft">
+        <span className="flex items-center gap-1.5 text-[length:var(--step-1)] font-bold text-ink-soft">
           <Network size={15} aria-hidden="true" />
           גרף
         </span>
@@ -105,14 +105,14 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
         </button>
       </div>
 
-      <p className="text-[var(--step-1)] text-ink-soft">
+      <p className="text-[length:var(--step-1)] text-ink-soft">
         {usingCustom ? 'הגרף שבנית ונשמר בדפדפן.' : `${preset.nameHe}: ${preset.whyHe}`}
       </p>
 
       {(module.needsSource || module.needsSink) && (
         <div className="flex flex-wrap items-center gap-3">
           {module.needsSource && (
-            <label className="flex items-center gap-2 text-[var(--step-2)]">
+            <label className="flex items-center gap-2 text-[length:var(--step-2)]">
               <span className="text-ink-soft">צומת מקור</span>
               <select
                 className="btn"
@@ -128,7 +128,7 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
             </label>
           )}
           {module.needsSink && (
-            <label className="flex items-center gap-2 text-[var(--step-2)]">
+            <label className="flex items-center gap-2 text-[length:var(--step-2)]">
               <span className="text-ink-soft">צומת בור</span>
               <select className="btn" value={sink ?? ''} onChange={(e) => setSink(e.target.value)}>
                 {graph.nodes.map((n) => (
@@ -147,7 +147,7 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
         .map((v) => (
           <div
             key={v.text}
-            className="rounded-card border p-3 text-[var(--step-2)]"
+            className="rounded-card border p-3 text-[length:var(--step-2)]"
             style={{
               borderColor: v.level === 'error' ? 'var(--state-current)' : 'var(--state-frontier)',
               background:
@@ -166,7 +166,7 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
               />
               <span>{v.text}</span>
             </p>
-            {v.suggestion && <p className="mt-1 text-[var(--step-1)]">{v.suggestion}</p>}
+            {v.suggestion && <p className="mt-1 text-[length:var(--step-1)]">{v.suggestion}</p>}
             <div className="mt-2 flex flex-wrap gap-2">
               <button className="btn" onClick={() => setDismissed((d) => [...d, v.text])}>
                 הרץ בכל זאת
@@ -213,7 +213,7 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
 
           <p
             aria-live="polite"
-            className="card-quiet flex min-h-[62px] items-center px-3 py-2 text-[var(--step-3)]"
+            className="card-quiet flex min-h-[62px] items-center px-3 py-2 text-[length:var(--step-3)]"
           >
             {frame?.message ?? 'אין צעדים להצגה בגרף הזה.'}
           </p>
@@ -238,7 +238,7 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
 
       {module.content.compareHint && onGoToCompare && (
         <div className="flex flex-wrap items-center gap-3 rounded-card border border-line bg-sunken px-4 py-3">
-          <p className="flex-1 text-[var(--step-2)]">{module.content.compareHint.text}</p>
+          <p className="flex-1 text-[length:var(--step-2)]">{module.content.compareHint.text}</p>
           <button
             className="btn btn-primary"
             onClick={() => onGoToCompare(module.content.compareHint!.pairId)}

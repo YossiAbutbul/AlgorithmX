@@ -39,6 +39,14 @@
   }
 }
 
+/* אותה סקאלה של חמישה גדלים, מכווצת מעט למסך צר */
+@media (max-width: 639px) {
+  :root {
+    --step-4: 1.2rem;
+    --step-5: 1.5rem;
+  }
+}
+
 @layer base {
   html {
     background: var(--bg);
@@ -148,6 +156,7 @@
     color: var(--ink);
     border-radius: 10px;
     padding: 0.4rem 0.85rem;
+    min-height: 36px;
     font-size: var(--step-2);
     font-weight: 600;
     cursor: pointer;
@@ -183,7 +192,8 @@
     border: 1px solid var(--line);
     background: var(--surface);
     border-radius: 999px;
-    padding: 0.25rem 0.75rem;
+    padding: 0.3rem 0.8rem;
+    min-height: 32px;
     font-size: var(--step-1);
     font-weight: 600;
     cursor: pointer;
@@ -244,7 +254,8 @@
     border: 0;
     border-radius: 999px;
     background: transparent;
-    padding: 0.42rem 0.72rem;
+    min-height: 34px;
+    padding: 0.42rem 0.62rem;
     font-size: var(--step-2);
     font-weight: 600;
     color: var(--ink-soft);
@@ -415,6 +426,23 @@
     background: var(--accent);
     border-color: var(--accent);
     color: #fff;
+  }
+
+  @media (max-width: 639px) {
+    .subtab {
+      gap: 0.35rem;
+      padding: 0.7rem 0.45rem;
+      font-size: var(--step-1);
+    }
+
+    .subtab-index {
+      width: 1.1rem;
+      height: 1.1rem;
+    }
+
+    .nav-tab {
+      padding: 0.42rem 0.6rem;
+    }
   }
 
   .info-btn {

@@ -41,7 +41,7 @@ export function StepControls({ player }: Props) {
 
       <div className="flex items-center gap-1" role="group" aria-label="מהירות ניגון">
         <Gauge size={15} aria-hidden="true" style={{ color: 'var(--ink-soft)' }} />
-        <span className="text-[var(--step-1)] text-ink-soft">מהירות</span>
+        <span className="text-[length:var(--step-1)] text-ink-soft">מהירות</span>
         {SPEEDS.map((s) => (
           <button
             key={s.id}
@@ -54,7 +54,7 @@ export function StepControls({ player }: Props) {
         ))}
       </div>
 
-      <div className="num ms-auto text-[var(--step-2)] font-semibold text-ink-soft">
+      <div className="num ms-auto text-[length:var(--step-2)] font-semibold text-ink-soft">
         צעד {index + 1} מתוך {total}
       </div>
     </div>

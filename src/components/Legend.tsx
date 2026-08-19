@@ -93,18 +93,18 @@ export function Legend({ flow = false }: LegendProps) {
     <div className="card-quiet bg-sunken px-4 py-3">
       <div className="flex flex-wrap gap-x-6 gap-y-2">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          <span className="text-[var(--step-1)] font-bold text-ink-soft">צמתים</span>
+          <span className="text-[length:var(--step-1)] font-bold text-ink-soft">צמתים</span>
           {NODE_ITEMS.map((item) => (
-            <span key={item.label} className="flex items-center gap-1.5 text-[var(--step-1)]">
+            <span key={item.label} className="flex items-center gap-1.5 text-[length:var(--step-1)]">
               <NodeSwatch fill={item.fill} stroke={item.stroke} glyph={item.glyph} />
               {item.label}
             </span>
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          <span className="text-[var(--step-1)] font-bold text-ink-soft">צלעות</span>
+          <span className="text-[length:var(--step-1)] font-bold text-ink-soft">צלעות</span>
           {edgeItems.map((item) => (
-            <span key={item.label} className="flex items-center gap-1.5 text-[var(--step-1)]">
+            <span key={item.label} className="flex items-center gap-1.5 text-[length:var(--step-1)]">
               <EdgeSwatch stroke={item.stroke} width={item.width} dash={item.dash} />
               {item.label}
             </span>

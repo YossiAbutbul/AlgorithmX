@@ -7,7 +7,7 @@ export function MatrixView({ view }: { view: M }) {
   return (
     <div>
       <div className="scroll-x">
-        <table className="border-collapse text-[var(--step-2)]" dir="ltr">
+        <table className="border-collapse text-[length:var(--step-2)]" dir="ltr">
           <thead>
             <tr>
               <th className="px-2 py-1" />
@@ -15,7 +15,7 @@ export function MatrixView({ view }: { view: M }) {
                 <th
                   key={l}
                   scope="col"
-                  className="num px-2 py-1 text-center text-[var(--step-1)] font-semibold"
+                  className="num px-2 py-1 text-center text-[length:var(--step-1)] font-semibold"
                   style={{
                     color: c === view.highlightCol ? 'var(--accent)' : 'var(--ink-soft)',
                   }}
@@ -30,7 +30,7 @@ export function MatrixView({ view }: { view: M }) {
               <tr key={r}>
                 <th
                   scope="row"
-                  className="num px-2 py-1 text-center text-[var(--step-1)] font-semibold"
+                  className="num px-2 py-1 text-center text-[length:var(--step-1)] font-semibold"
                   style={{ color: r === view.highlightRow ? 'var(--accent)' : 'var(--ink-soft)' }}
                 >
                   {view.labels[r]}
@@ -69,7 +69,7 @@ export function MatrixView({ view }: { view: M }) {
           </tbody>
         </table>
       </div>
-      {view.note && <p className="mt-1 text-[var(--step-1)] text-ink-soft">{view.note}</p>}
+      {view.note && <p className="mt-1 text-[length:var(--step-1)] text-ink-soft">{view.note}</p>}
     </div>
   );
 }

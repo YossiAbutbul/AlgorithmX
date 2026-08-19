@@ -431,6 +431,11 @@
   }
 
   @media (max-width: 639px) {
+    /* Touch devices bring their own overlay scrollbar, so the custom one is dropped */
+    .scroll-overlay {
+      display: none;
+    }
+
     /* Only the icon remains in the narrow footer, so the link needs a real tap target */
     .footer-link {
       min-height: 36px;

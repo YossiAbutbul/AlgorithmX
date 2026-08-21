@@ -8,7 +8,7 @@ import type {
   NodeState,
 } from '../algorithms/types';
 
-const R = 22;
+const R = 26;
 
 interface NodeStyle {
   fill: string;
@@ -136,6 +136,8 @@ export interface GraphCanvasProps {
   onNodeDrag?: (id: NodeId, x: number, y: number) => void;
   selectedNodes?: NodeId[];
   compact?: boolean;
+  /** Fill the parent box instead of capping at a fixed height. */
+  fit?: boolean;
   ariaLabel?: string;
 }
 
@@ -149,6 +151,7 @@ export function GraphCanvas({
   onNodeDrag,
   selectedNodes = [],
   compact = false,
+  fit = false,
   ariaLabel,
 }: GraphCanvasProps) {
   const pos = useMemo(() => {
@@ -227,8 +230,13 @@ export function GraphCanvas({
   return (
     <svg
       viewBox={`0 0 ${graph.width} ${graph.height}`}
-      className="w-full h-auto select-none"
-      style={{ maxHeight: compact ? 260 : 420, direction: 'ltr' }}
+      preserveAspectRatio="xMidYMid meet"
+      className={fit ? 'select-none' : 'h-auto w-full select-none'}
+      style={
+        fit
+          ? { width: '100%', height: '100%', direction: 'ltr' }
+          : { maxHeight: compact ? 260 : 420, direction: 'ltr' }
+      }
       role="img"
       aria-label={ariaLabel ?? 'תרשים הגרף'}
       onClick={(e) => {
@@ -271,7 +279,7 @@ export function GraphCanvas({
             y={22}
             fontSize={12}
             fill="var(--ink-soft)"
-            fontFamily="Assistant, sans-serif"
+            fontFamily="Heebo, sans-serif"
           >
             min cut
           </text>
@@ -307,6 +315,7 @@ export function GraphCanvas({
               />
             )}
             <path
+              key={`${e.id}-${st}`}
               d={geo.path}
               fill="none"
               stroke={style.stroke}
@@ -315,7 +324,20 @@ export function GraphCanvas({
               strokeLinecap="round"
               opacity={style.opacity ?? 1}
               markerEnd={graph.directed ? `url(#${markerIdFor(st)})` : undefined}
-              style={{ transition: 'stroke .18s ease, stroke-width .18s ease' }}
+              className={
+                st === 'considered'
+                  ? 'edge-flow'
+                  : st === 'tree' || st === 'saturated'
+                    ? 'edge-draw'
+                    : undefined
+              }
+              style={{
+                transition: 'stroke .2s ease, stroke-width .2s ease',
+                // The draw animation needs a dash as long as the path itself
+                ...(st === 'tree' || st === 'saturated'
+                  ? ({ '--draw-len': '400', strokeDasharray: 400 } as React.CSSProperties)
+                  : null),
+              }}
             />
             {label !== '' && (
               <g>
@@ -408,12 +430,16 @@ export function GraphCanvas({
             )}
             {style.glyph === 'ring' && (
               <circle
+                className="node-pulse"
                 cx={n.x}
                 cy={n.y}
                 r={R + 4}
                 fill="none"
                 stroke={style.stroke}
-                strokeWidth={1.4}
+                strokeWidth={2}
+                style={
+                  { '--pulse-min': `${R + 3}px`, '--pulse-max': `${R + 13}px` } as React.CSSProperties
+                }
               />
             )}
             <circle
@@ -424,15 +450,17 @@ export function GraphCanvas({
               stroke={style.stroke}
               strokeWidth={style.width}
               strokeDasharray={style.dash}
-              style={{ transition: 'fill .2s ease, stroke .2s ease' }}
+              style={{
+                transition: 'fill .24s ease, stroke .24s ease, stroke-width .24s ease',
+              }}
             />
             <text
               x={n.x}
               y={n.y + 5}
               textAnchor="middle"
-              fontSize={15}
+              fontSize={17}
               fontWeight={700}
-              fontFamily="'JetBrains Mono', monospace"
+              fontFamily="Heebo, sans-serif"
               fill="var(--ink)"
             >
               {n.id}
@@ -460,12 +488,16 @@ export function GraphCanvas({
             )}
             {badge && (
               <text
+                key={`${n.id}-${badge}`}
+                className="pop-in"
                 x={n.x}
-                y={n.y + R + 16}
+                y={n.y + R + 17}
                 textAnchor="middle"
-                fontSize={12}
+                fontSize={13}
+                fontWeight={600}
                 fontFamily="'JetBrains Mono', monospace"
-                fill="var(--ink-soft)"
+                fill={st === 'idle' ? 'var(--ink-faint)' : style.stroke}
+                style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
               >
                 {badge}
               </text>

@@ -1,20 +1,17 @@
 import {
   Boxes,
+  ChevronLeft,
   Gauge,
   GraduationCap,
   Lightbulb,
-  MemoryStick,
-  Network,
   Play,
-  Scale,
   ShieldQuestionMark,
   Timer,
   TriangleAlert,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import { InfoTooltip } from '../components/InfoTooltip';
 import { DijkstraNegativeInsight, FlowIterationInsight } from '../components/InsightBox';
-import type { SectionId } from '../components/sections';
+import { SECTIONS, type SectionId } from '../components/sections';
 import { Quiz } from '../components/Quiz';
 import { RunPanel } from '../components/RunPanel';
 import { Accordion, Section } from '../components/Section';
@@ -24,17 +21,9 @@ interface Props {
   module: AlgorithmModule;
   all: AlgorithmModule[];
   section: SectionId;
+  onSelectSection: (id: SectionId) => void;
   onNavigate: (id: string) => void;
   onGoToCompare: (pairId: string) => void;
-}
-
-function Badge({ icon: Icon, children, mono }: { icon: LucideIcon; children: string; mono?: boolean }) {
-  return (
-    <span className="meta-badge">
-      <Icon size={14} aria-hidden="true" style={{ color: 'var(--accent)' }} />
-      <span className={mono ? 'num' : undefined}>{children}</span>
-    </span>
-  );
 }
 
 function Bullets({ items }: { items: string[] }) {
@@ -54,98 +43,134 @@ function Bullets({ items }: { items: string[] }) {
   );
 }
 
-export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare }: Props) {
+/** A quiet line of facts, shown where they are relevant rather than on every section. */
+function Facts({ module }: { module: AlgorithmModule }) {
+  const graphKind = module.graphKind.flow
+    ? 'רשת זרימה'
+    : module.graphKind.directed
+      ? 'גרף מכוון'
+      : 'גרף לא מכוון';
+  const weights = !module.graphKind.weighted
+    ? 'בלי משקלים'
+    : module.graphKind.flow
+      ? 'קיבולים אי שליליים'
+      : module.graphKind.allowNegative
+        ? 'תומך במשקלים שליליים'
+        : 'משקלים אי שליליים בלבד';
+  return (
+    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-ink-soft" style={{ fontSize: 'var(--step-1)' }}>
+      <span>{graphKind}</span>
+      <span aria-hidden="true">&middot;</span>
+      <span>{weights}</span>
+      <span aria-hidden="true">&middot;</span>
+      <span className="flex items-center gap-1">
+        <Timer size={13} aria-hidden="true" />
+        <span className="num">{module.content.efficiency.time}</span>
+      </span>
+      {module.content.structures[0] && (
+        <>
+          <span aria-hidden="true">&middot;</span>
+          <span className="flex items-center gap-1">
+            <Boxes size={13} aria-hidden="true" />
+            {module.content.structures[0].name}
+          </span>
+        </>
+      )}
+    </p>
+  );
+}
+
+export function AlgorithmPage({
+  module,
+  all,
+  section,
+  onSelectSection,
+  onNavigate,
+  onGoToCompare,
+}: Props) {
   const active = section;
+  const isRun = active === 'run';
 
   const prereqs = module.requires
     .map((id) => all.find((m) => m.id === id))
     .filter((m): m is AlgorithmModule => !!m);
 
+  const i = SECTIONS.findIndex((s) => s.id === active);
+  const nextSection = SECTIONS[i + 1];
+
   return (
-    <article className="flex flex-col">
-      <header className="flex flex-col gap-3 pb-4 pt-6">
+    <article className="flex flex-1 flex-col">
+      {/*
+       * The title is stated once. The section tab in the header says which part
+       * you are on, so the old card header and its second numbering are gone.
+       */}
+      <header className="flex flex-col gap-1 pb-3 pt-4">
         <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="text-[length:var(--step-5)]">{module.titleHe}</h1>
+          <h1 style={{ fontSize: 'var(--step-5)' }}>{module.titleHe}</h1>
           {prereqs.length > 0 && (
             <InfoTooltip label="מה צריך לדעת לפני">
-              <p className="mb-2 text-[length:var(--step-1)] font-bold text-ink-soft">
+              <p className="mb-2 text-ink-soft" style={{ fontSize: 'var(--step-1)', fontWeight: 700 }}>
                 מה צריך לדעת לפני
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {prereqs.map((p) => (
-                  <span key={p.id} className="meta-badge num">
+                  <button
+                    key={p.id}
+                    className="meta-badge num"
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => onNavigate(p.id)}
+                  >
                     {p.shortHe}
-                  </span>
+                  </button>
                 ))}
               </div>
             </InfoTooltip>
           )}
         </div>
-
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Badge icon={Network}>
-            {module.graphKind.flow
-              ? 'רשת זרימה'
-              : module.graphKind.directed
-                ? 'גרף מכוון'
-                : 'גרף לא מכוון'}
-          </Badge>
-          <Badge icon={Scale}>
-            {!module.graphKind.weighted
-              ? 'בלי משקלים'
-              : module.graphKind.flow
-                ? 'קיבולים אי שליליים'
-                : module.graphKind.allowNegative
-                  ? 'תומך במשקלים שליליים'
-                  : 'משקלים אי שליליים בלבד'}
-          </Badge>
-          <Badge icon={Timer} mono>
-            {module.content.efficiency.time}
-          </Badge>
-          <Badge icon={MemoryStick} mono>
-            {module.content.efficiency.space}
-          </Badge>
-          {module.content.structures[0] && (
-            <Badge icon={Boxes}>{module.content.structures[0].name}</Badge>
-          )}
-        </div>
+        <Facts module={module} />
       </header>
 
       <div
         key={active}
         id={`panel-${active}`}
         role="tabpanel"
-        aria-labelledby={`sub-${active}`}
-        className="panel-in flex flex-col gap-4 pt-4"
+        aria-labelledby={`tab-${active}`}
+        className="panel-in flex flex-1 flex-col gap-4"
       >
         {active === 'idea' && (
-          <Section step={1} title="רעיון ומטרה" icon={Lightbulb}>
-            <p className="max-w-[68ch] text-[length:var(--step-3)]">{module.content.idea}</p>
+          <Section title="רעיון ומטרה" icon={Lightbulb} narrow>
+            <p className="prose" style={{ fontSize: 'var(--step-3)' }}>
+              {module.content.idea}
+            </p>
             <hr className="hairline" />
-            <h3 className="mb-2 text-[length:var(--step-3)]">מתי משתמשים</h3>
-            <Bullets items={module.content.whenToUse} />
-          </Section>
-        )}
-
-        {active === 'run' && (
-          <Section step={2} title="הרצה על גרף" subtitle={module.content.determinism} icon={Play}>
-            <div className="flex flex-col gap-4">
-              <RunPanel module={module} onGoToCompare={onGoToCompare} onNavigate={onNavigate} />
-              {module.id === 'dijkstra' && <DijkstraNegativeInsight onNavigate={onNavigate} />}
-              {module.id === 'edmonds-karp' && (
-                <FlowIterationInsight onCompare={() => onGoToCompare('ff-ek')} />
-              )}
+            <h3 className="mb-2" style={{ fontSize: 'var(--step-3)' }}>
+              מתי משתמשים
+            </h3>
+            <div className="prose">
+              <Bullets items={module.content.whenToUse} />
             </div>
           </Section>
         )}
 
+        {isRun && (
+          <div className="flex flex-col gap-4">
+            <RunPanel module={module} onGoToCompare={onGoToCompare} onNavigate={onNavigate} />
+            {module.id === 'dijkstra' && <DijkstraNegativeInsight onNavigate={onNavigate} />}
+            {module.id === 'edmonds-karp' && (
+              <FlowIterationInsight onCompare={() => onGoToCompare('ff-ek')} />
+            )}
+          </div>
+        )}
+
         {active === 'structures' && (
-          <Section step={3} title="מבני נתונים" icon={Boxes}>
+          <Section title="מבני נתונים" icon={Boxes}>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {module.content.structures.map((s) => (
                 <div key={s.name} className="card-quiet p-3">
-                  <h3 className="num mb-1 text-[length:var(--step-3)]">{s.name}</h3>
-                  <p className="text-[length:var(--step-2)] text-ink-soft">{s.role}</p>
+                  <h3 className="num mb-1" style={{ fontSize: 'var(--step-3)' }}>
+                    {s.name}
+                  </h3>
+                  <p className="text-ink-soft">{s.role}</p>
                 </div>
               ))}
             </div>
@@ -153,17 +178,21 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
         )}
 
         {active === 'efficiency' && (
-          <Section step={4} title="יעילות" icon={Gauge}>
+          <Section title="יעילות" icon={Gauge} narrow>
             <div className="mb-4 flex flex-wrap gap-3">
               <div className="card-quiet flex-1 px-4 py-3">
-                <p className="text-[length:var(--step-1)] text-ink-soft">זמן</p>
-                <p className="num text-[length:var(--step-4)]" style={{ color: 'var(--accent)' }}>
+                <p className="text-ink-soft" style={{ fontSize: 'var(--step-1)' }}>
+                  זמן
+                </p>
+                <p className="num" style={{ fontSize: 'var(--step-4)', color: 'var(--accent)' }}>
                   {module.content.efficiency.time}
                 </p>
               </div>
               <div className="card-quiet flex-1 px-4 py-3">
-                <p className="text-[length:var(--step-1)] text-ink-soft">זיכרון</p>
-                <p className="num text-[length:var(--step-4)]" style={{ color: 'var(--accent)' }}>
+                <p className="text-ink-soft" style={{ fontSize: 'var(--step-1)' }}>
+                  זיכרון
+                </p>
+                <p className="num" style={{ fontSize: 'var(--step-4)', color: 'var(--accent)' }}>
                   {module.content.efficiency.space}
                 </p>
               </div>
@@ -173,7 +202,7 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
         )}
 
         {active === 'pitfalls' && (
-          <Section step={5} title="מלכודות ומסקנות" icon={TriangleAlert}>
+          <Section title="מלכודות ומסקנות" icon={TriangleAlert} narrow>
             <ul className="flex flex-col gap-3">
               {module.content.pitfalls.map((p) => (
                 <li key={p.title} className="flex gap-2.5">
@@ -184,7 +213,7 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
                     style={{ color: 'var(--state-frontier)' }}
                   />
                   <div>
-                    <h3 className="text-[length:var(--step-3)]">{p.title}</h3>
+                    <h3 style={{ fontSize: 'var(--step-3)' }}>{p.title}</h3>
                     <p className="text-ink-soft">{p.body}</p>
                   </div>
                 </li>
@@ -192,14 +221,18 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
             </ul>
             <hr className="hairline" />
             <p
-              className="rounded-card px-4 py-3 text-[length:var(--step-3)]"
-              style={{ background: 'var(--accent-soft)', color: 'var(--ink)' }}
+              className="rounded-card px-4 py-3"
+              style={{
+                fontSize: 'var(--step-3)',
+                background: 'var(--accent-soft)',
+                color: 'var(--ink)',
+              }}
             >
               <b>השורה התחתונה: </b>
               {module.content.bottomLine}
             </p>
-            <div className="card-quiet mt-3 bg-sunken p-3">
-              <h3 className="mb-1.5 flex items-center gap-2 text-[length:var(--step-3)]">
+            <div className="card-quiet mt-3 p-3">
+              <h3 className="mb-1.5 flex items-center gap-2" style={{ fontSize: 'var(--step-3)' }}>
                 <GraduationCap size={18} aria-hidden="true" style={{ color: 'var(--accent)' }} />
                 איך זה נשאל במבחן
               </h3>
@@ -211,21 +244,33 @@ export function AlgorithmPage({ module, all, section, onNavigate, onGoToCompare 
         {active === 'practice' && (
           <>
             <Accordion summary="למה זה עובד" icon={ShieldQuestionMark}>
-              <p className="mb-2">
+              <p className="prose mb-2">
                 <b>האינווריאנטה: </b>
                 {module.content.proof.invariant}
               </p>
-              {module.content.proof.paragraphs.map((p, i) => (
-                <p key={i} className="mb-2 max-w-[70ch] text-ink-soft">
+              {module.content.proof.paragraphs.map((p, k) => (
+                <p key={k} className="prose mb-2 text-ink-soft">
                   {p}
                 </p>
               ))}
             </Accordion>
 
-            <Section title="שאלות תרגול" icon={GraduationCap}>
+            <Section title="שאלות תרגול" icon={GraduationCap} narrow>
               <Quiz items={module.content.quiz} />
             </Section>
           </>
+        )}
+
+        {/* A light section used to float in an empty page. Now it points forward. */}
+        {!isRun && nextSection && (
+          <button
+            className="btn mt-2 self-start"
+            onClick={() => onSelectSection(nextSection.id)}
+          >
+            {nextSection.id === 'run' && <Play size={15} aria-hidden="true" />}
+            הבא: {nextSection.label}
+            <ChevronLeft size={16} aria-hidden="true" />
+          </button>
         )}
       </div>
     </article>

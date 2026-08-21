@@ -16,7 +16,7 @@ function Box({
 }) {
   return (
     <div className="card-quiet bg-sunken p-3">
-      <h3 className="mb-2 text-[length:var(--step-3)]">{title}</h3>
+      <h3 className="mb-2 text-(length:--step-3)">{title}</h3>
       {children}
       {action && (
         <button className="btn btn-primary mt-3" onClick={action.onClick}>
@@ -41,14 +41,14 @@ export function DijkstraNegativeInsight({ onNavigate }: { onNavigate: (id: strin
       title="מה בדיוק יוצא שגוי בגרף עם המשקל השלילי"
       action={{ label: 'עבור ל-Bellman-Ford', onClick: () => onNavigate('bellman-ford') }}
     >
-      <table className="w-full max-w-md border-collapse text-[length:var(--step-2)]">
+      <table className="w-full max-w-md border-collapse text-(length:--step-2)">
         <thead>
           <tr>
             {['צומת', 'Dijkstra', 'האמת'].map((c) => (
               <th
                 key={c}
                 scope="col"
-                className="border-b border-line px-2 py-1 text-start text-[length:var(--step-1)] text-ink-soft"
+                className="border-b border-line px-2 py-1 text-start text-(length:--step-1) text-ink-soft"
               >
                 {c}
               </th>
@@ -74,7 +74,7 @@ export function DijkstraNegativeInsight({ onNavigate }: { onNavigate: (id: strin
           })}
         </tbody>
       </table>
-      <p className="mt-2 text-[length:var(--step-2)] text-ink-soft">
+      <p className="mt-2 text-(length:--step-2) text-ink-soft">
         Dijkstra סוגר את A על 3 לפני שהוא בכלל מסתכל על B, ואינו חוזר לצומת סגור. Bellman-Ford סורק
         את כל הצלעות שוב ולכן מתקן את הערך ל-1.
       </p>
@@ -107,14 +107,14 @@ export function FlowIterationInsight({ onCompare }: { onCompare: () => void }) {
       title="מונה איטרציות: Ford-Fulkerson מול Edmonds-Karp"
       action={{ label: 'פתח השוואה זו לצד זו', onClick: onCompare }}
     >
-      <table className="w-full max-w-xl border-collapse text-[length:var(--step-2)]">
+      <table className="w-full max-w-xl border-collapse text-(length:--step-2)">
         <thead>
           <tr>
             {['רשת', 'Ford-Fulkerson', 'Edmonds-Karp', 'הפרש', 'זרימה מקסימלית'].map((c) => (
               <th
                 key={c}
                 scope="col"
-                className="border-b border-line px-2 py-1 text-start text-[length:var(--step-1)] text-ink-soft"
+                className="border-b border-line px-2 py-1 text-start text-(length:--step-1) text-ink-soft"
               >
                 {c}
               </th>
@@ -140,7 +140,7 @@ export function FlowIterationInsight({ onCompare }: { onCompare: () => void }) {
           ))}
         </tbody>
       </table>
-      <p className="mt-2 text-[length:var(--step-2)] text-ink-soft">
+      <p className="mt-2 text-(length:--step-2) text-ink-soft">
         הזרימה המקסימלית זהה תמיד. מה שמשתנה הוא רק מספר האיטרציות, וזה בדיוק מה ש-BFS קונה לנו.
       </p>
     </Box>

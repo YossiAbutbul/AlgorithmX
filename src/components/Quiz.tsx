@@ -26,7 +26,7 @@ export function Quiz({ items }: { items: QuizItem[] }) {
           </button>
           {open[i] && (
             <p
-              className="mt-2 rounded-lg px-3 py-2 text-[length:var(--step-2)]"
+              className="mt-2 rounded-lg px-3 py-2 text-(length:--step-2)"
               style={{ background: 'var(--state-done-fill)' }}
             >
               {q.answer}

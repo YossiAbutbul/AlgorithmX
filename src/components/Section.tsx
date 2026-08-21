@@ -3,35 +3,42 @@ import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 interface Props {
-  step?: number;
   title: string;
   subtitle?: string;
   id?: string;
   icon?: LucideIcon;
+  /**
+   * Sections with little in them get a reading column instead of a full width
+   * card floating in an empty page.
+   */
+  narrow?: boolean;
   children: ReactNode;
 }
 
-export function Section({ step, title, subtitle, id, icon: Icon, children }: Props) {
+export function Section({ title, subtitle, id, icon: Icon, narrow = false, children }: Props) {
   return (
-    <section id={id} className="card p-4 sm:p-6">
+    <section
+      id={id}
+      className="card p-4 sm:p-6"
+      style={narrow ? { maxWidth: '78ch' } : undefined}
+    >
       <header className="mb-4 flex items-center gap-3">
-        {(step !== undefined || Icon) && (
+        {Icon && (
           <span
-            className="num flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[length:var(--step-2)] font-bold"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
             style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}
             aria-hidden="true"
           >
-            {Icon ? <Icon size={18} /> : step}
+            <Icon size={18} />
           </span>
         )}
         <div>
-          <h2 className="flex items-baseline gap-2 text-[length:var(--step-4)]">
-            {step !== undefined && (
-              <span className="num text-[length:var(--step-1)] text-ink-soft">חלק {step}</span>
-            )}
-            {title}
-          </h2>
-          {subtitle && <p className="text-[length:var(--step-1)] text-ink-soft">{subtitle}</p>}
+          <h2 style={{ fontSize: 'var(--step-4)' }}>{title}</h2>
+          {subtitle && (
+            <p className="text-ink-soft" style={{ fontSize: 'var(--step-1)' }}>
+              {subtitle}
+            </p>
+          )}
         </div>
       </header>
       {children}
@@ -51,8 +58,11 @@ export function Accordion({
   icon?: LucideIcon;
 }) {
   return (
-    <details id={id} className="card-quiet group overflow-hidden">
-      <summary className="flex cursor-pointer items-center gap-2 px-4 py-2.5 text-[length:var(--step-2)] font-semibold">
+    <details id={id} className="card group overflow-hidden" style={{ maxWidth: '78ch' }}>
+      <summary
+        className="flex cursor-pointer items-center gap-2 px-4 py-3 font-semibold"
+        style={{ fontSize: 'var(--step-2)', minHeight: 'var(--tap)' }}
+      >
         <ChevronDown
           size={17}
           aria-hidden="true"
@@ -62,7 +72,7 @@ export function Accordion({
         {Icon && <Icon size={16} aria-hidden="true" style={{ color: 'var(--ink-soft)' }} />}
         {summary}
       </summary>
-      <div className="border-t border-line px-4 py-3">{children}</div>
+      <div className="panel-in border-t border-line px-4 py-3">{children}</div>
     </details>
   );
 }

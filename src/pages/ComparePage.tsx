@@ -3,10 +3,9 @@ import { ChevronLeft, ChevronRight, Unlink } from 'lucide-react';
 import { ALGORITHMS, getAlgorithm } from '../algorithms';
 import type { Frame, GraphModel, NodeId } from '../algorithms/types';
 import { AuxPanel } from '../components/panels/AuxPanel';
+import { EVENT_COLOR, EVENT_LABEL } from '../components/events';
 import { GraphCanvas } from '../components/GraphCanvas';
-import { Legend } from '../components/Legend';
-import { StepControls } from '../components/StepControls';
-import { StepTimeline } from '../components/StepTimeline';
+import { TransportRail } from '../components/TransportRail';
 import { usePlayer } from '../components/usePlayer';
 import { COMPARE_PAIRS } from '../content/comparison';
 
@@ -24,47 +23,55 @@ function Side({ title, graph, frames, index, onSeek, synced }: SideProps) {
   const i = Math.min(index, frames.length - 1);
   const frame = frames[i];
   return (
-    <section className="card flex flex-col gap-3 p-3">
-      <header className="flex items-baseline justify-between gap-2">
-        <h2 className="text-[length:var(--step-4)]">{title}</h2>
-        <span className="num text-[length:var(--step-1)] text-ink-soft">
-          צעד {i + 1} מתוך {frames.length}
-        </span>
-      </header>
-      <div className="card-quiet bg-sunken p-2">
-        <GraphCanvas
-          graph={graph}
-          frame={frame}
-          hoveredNode={hovered}
-          onHoverNode={setHovered}
-          compact
-          ariaLabel={`הרצת ${title}`}
-        />
+    <section className="flex flex-col gap-3">
+      <div className="stage" style={{ height: 'clamp(240px, 42vh, 420px)' }}>
+        <header className="flex flex-none items-baseline justify-between gap-2 border-b border-line-soft px-3 py-2">
+          <h2 style={{ fontSize: 'var(--step-3)' }}>{title}</h2>
+          <span dir="ltr" className="num text-ink-soft" style={{ fontSize: 'var(--step-1)' }}>
+            {i + 1} / {frames.length}
+          </span>
+        </header>
+        <div className="stage-canvas">
+          <GraphCanvas
+            graph={graph}
+            frame={frame}
+            hoveredNode={hovered}
+            onHoverNode={setHovered}
+            fit
+            ariaLabel={`הרצת ${title}`}
+          />
+        </div>
+        <p className="stage-caption" aria-live="polite" style={{ fontSize: 'var(--step-2)' }}>
+          {frame && (
+            <span key={i} className="caption-swap flex items-center gap-2.5">
+              <span className="event-chip" style={{ background: EVENT_COLOR[frame.event] }}>
+                {EVENT_LABEL[frame.event]}
+              </span>
+              <span>{frame.message}</span>
+            </span>
+          )}
+        </p>
       </div>
-      <p
-        aria-live="polite"
-        className="card-quiet flex min-h-[58px] items-center px-3 py-2 text-[length:var(--step-2)]"
-      >
-        {frame?.message}
-      </p>
-      <StepTimeline frames={frames} index={i} onSeek={onSeek} />
+
+      {/* Unsynced sides get their own two buttons, nothing more. */}
       {!synced && (
         <div className="flex gap-1.5">
-          <button className="btn" onClick={() => onSeek(i - 1)} disabled={i === 0}>
+          <button className="btn btn-sm" onClick={() => onSeek(i - 1)} disabled={i === 0}>
             <ChevronRight size={16} aria-hidden="true" />
             הקודם
           </button>
-          <button
-            className="btn"
-            onClick={() => onSeek(i + 1)}
-            disabled={i >= frames.length - 1}
-          >
+          <button className="btn btn-sm" onClick={() => onSeek(i + 1)} disabled={i >= frames.length - 1}>
             הבא
             <ChevronLeft size={16} aria-hidden="true" />
           </button>
         </div>
       )}
-      {frame && <AuxPanel views={frame.aux} hovered={hovered} onHover={setHovered} />}
+
+      {frame && (
+        <div className="card p-3">
+          <AuxPanel views={frame.aux} hovered={hovered} onHover={setHovered} />
+        </div>
+      )}
     </section>
   );
 }
@@ -108,31 +115,36 @@ export function ComparePage({ initialPair }: { initialPair: string | null }) {
     setRightIndex(0);
   }, [pairId]);
 
+  /** The scrubber shows the longer of the two runs, so both sides share one axis. */
+  const railFrames = leftFrames.length >= rightFrames.length ? leftFrames : rightFrames;
+
   return (
     <div className="flex flex-col gap-4">
-      <header>
-        <h1 className="text-[length:var(--step-5)]">השוואה זו לצד זו</h1>
+      <header className="prose">
+        <h1 style={{ fontSize: 'var(--step-5)' }}>השוואה זו לצד זו</h1>
         <p className="text-ink-soft">
           שני אלגוריתמים על אותו גרף בדיוק, עם בקרת צעדים אחת. אם הצעדים אינם מקבילים במשמעות, אפשר
           לנתק את הסנכרון.
         </p>
       </header>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="no-scrollbar fade-end flex items-center gap-2">
         {COMPARE_PAIRS.map((p) => (
-          <button key={p.id} className="chip" aria-pressed={p.id === pairId} onClick={() => setPairId(p.id)}>
+          <button
+            key={p.id}
+            className="chip"
+            aria-pressed={p.id === pairId}
+            onClick={() => setPairId(p.id)}
+          >
             {p.label}
           </button>
         ))}
-        <label className="chip ms-auto" data-active={!synced}>
+        <label className="chip ms-auto flex-none" data-active={!synced}>
           <input type="checkbox" checked={!synced} onChange={(e) => setSynced(!e.target.checked)} />
           <Unlink size={14} aria-hidden="true" />
           נתק סנכרון
         </label>
       </div>
-
-      {synced && <StepControls player={player} />}
-      <Legend flow={graph.flow} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Side
@@ -140,7 +152,11 @@ export function ComparePage({ initialPair }: { initialPair: string | null }) {
           graph={graph}
           frames={leftFrames}
           index={leftIndex}
-          onSeek={(i) => (synced ? player.setIndex(i) : setLeftIndex(Math.max(0, Math.min(leftFrames.length - 1, i))))}
+          onSeek={(i) =>
+            synced
+              ? player.setIndex(i)
+              : setLeftIndex(Math.max(0, Math.min(leftFrames.length - 1, i)))
+          }
           synced={synced}
         />
         <Side
@@ -148,14 +164,25 @@ export function ComparePage({ initialPair }: { initialPair: string | null }) {
           graph={graph}
           frames={rightFrames}
           index={rightIndex}
-          onSeek={(i) => (synced ? player.setIndex(i) : setRightIndex(Math.max(0, Math.min(rightFrames.length - 1, i))))}
+          onSeek={(i) =>
+            synced
+              ? player.setIndex(i)
+              : setRightIndex(Math.max(0, Math.min(rightFrames.length - 1, i)))
+          }
           synced={synced}
         />
       </div>
 
+      {/* One rail drives both runs, in the same place it sits on the run screen. */}
+      {synced && (
+        <div className="run-rail">
+          <TransportRail player={player} frames={railFrames} flow={graph.flow} compact />
+        </div>
+      )}
+
       <p
-        className="rounded-card px-4 py-3 text-[length:var(--step-3)]"
-        style={{ background: 'var(--accent-soft)' }}
+        className="rounded-card px-4 py-3"
+        style={{ fontSize: 'var(--step-3)', background: 'var(--accent-soft)' }}
       >
         <b>מה למדנו מההשוואה: </b>
         {pair.lesson}

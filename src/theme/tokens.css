@@ -466,16 +466,68 @@
 }
 
 @utility stage-caption {
+  /* Narration on the first row, the pseudo-code line the step is on below it. */
   flex: none;
   display: flex;
-  align-items: center;
-  gap: 0.6rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3rem;
   min-height: 52px;
   padding: 0.55rem 0.9rem;
   border-top: 1px solid var(--line-soft);
   background: var(--surface-sunken);
   font-size: var(--step-3);
   line-height: 1.4;
+}
+
+@utility stage-key {
+  /* The node colours, pinned under the graph. Reference you read while running. */
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0.25rem 0.9rem;
+  border-top: 1px solid var(--line-soft);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: var(--step-1);
+  white-space: nowrap;
+}
+
+@utility caption-code {
+  /*
+   * A quiet code chip, not an alert. The old treatment borrowed the listing's
+   * red row highlight, and a 3px inline-start border on a rounded box draws as
+   * an arc, which read as a stray bracket in front of the line.
+   */
+  display: inline-flex;
+  align-items: stretch;
+  align-self: flex-start;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--step-1);
+  line-height: 1.7;
+}
+
+@utility caption-code-num {
+  /* The gutter, the same idea as the line numbers in the listing. */
+  flex: none;
+  padding: 0 0.5rem;
+  border-inline-end: 1px solid var(--line);
+  background: var(--surface-sunken);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+@utility caption-code-text {
+  padding: 0 0.6rem;
 }
 
 @utility event-chip {
@@ -714,7 +766,7 @@
   --tap: 44px;
 
   /* What the viewport has left for the graph once the chrome and rail are out. */
-  --stage-h: clamp(260px, calc(100vh - var(--header-h) - var(--rail-h) - 152px), 780px);
+  --stage-h: clamp(260px, calc(100vh - var(--header-h) - var(--rail-h) - 118px), 780px);
 
   --ease-spring: cubic-bezier(0.34, 1.28, 0.42, 1);
   --ease-out: cubic-bezier(0.22, 0.8, 0.3, 1);

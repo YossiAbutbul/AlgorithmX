@@ -3,11 +3,8 @@ import { ChevronLeft, ChevronRight, Info, Pause, Play, RotateCcw } from 'lucide-
 import type { Frame } from '../algorithms/types';
 import { EVENT_LABEL, EVENT_COLOR } from './events';
 import { Legend } from './Legend';
-import type { Player, Speed } from './usePlayer';
-
-/** Speed reads as a multiplier, and one button cycles through the three. */
-const SPEED_ORDER: Speed[] = ['normal', 'fast', 'slow'];
-const SPEED_LABEL: Record<Speed, string> = { slow: '0.5x', normal: '1x', fast: '2x' };
+import { SPEEDS } from './usePlayer';
+import type { Player } from './usePlayer';
 
 interface Props {
   player: Player;
@@ -149,10 +146,10 @@ export function TransportRail({
 
       <button
         className="btn btn-sm"
-        onClick={() => setSpeed(SPEED_ORDER[(SPEED_ORDER.indexOf(speed) + 1) % SPEED_ORDER.length])}
-        aria-label={`מהירות ניגון, כעת ${SPEED_LABEL[speed]}`}
+        onClick={() => setSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length])}
+        aria-label={`מהירות ניגון, כעת פי ${speed}`}
       >
-        <span className="num">{SPEED_LABEL[speed]}</span>
+        <span className="num">{speed}x</span>
       </button>
 
       {showLegend && (

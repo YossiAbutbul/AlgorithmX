@@ -8,7 +8,7 @@ interface Props {
 
 export function Pseudocode({ lines, activeLine }: Props) {
   return (
-    <Accordion summary="הצג פסאודו-קוד" icon={Code} wide>
+    <Accordion summary="פסאודו-קוד" icon={Code} wide persistKey="pseudocode">
       <p className="mb-2 text-(length:--step-1) text-ink-soft">
         השורה המודגשת היא השורה שמתאימה לצעד הנוכחי בהרצה.
       </p>

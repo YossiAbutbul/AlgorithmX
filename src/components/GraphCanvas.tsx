@@ -7,24 +7,33 @@ import type {
   NodeId,
   NodeState,
 } from '../algorithms/types';
-
-const R = 26;
+import {
+  MARK_R,
+  R,
+  curvedGeometry,
+  edgeGeometry,
+  graphView,
+  markOffset,
+  nodeAnchors,
+  nodePositions,
+} from './graphGeometry';
 
 interface NodeStyle {
   fill: string;
   stroke: string;
   width: number;
   dash?: string;
-  glyph: 'none' | 'dot' | 'ring' | 'check' | 'cross';
+  glyph: 'none' | 'ring' | 'cross';
 }
 
 const NODE_STYLES: Record<NodeState, NodeStyle> = {
   idle: { fill: '#ffffff', stroke: 'var(--state-idle-line)', width: 1.6, glyph: 'none' },
+  /* Fill and ring carry the state on their own; a second mark only added noise. */
   frontier: {
     fill: 'var(--state-frontier-fill)',
     stroke: 'var(--state-frontier)',
     width: 3,
-    glyph: 'dot',
+    glyph: 'none',
   },
   current: {
     fill: 'var(--state-current-fill)',
@@ -32,7 +41,7 @@ const NODE_STYLES: Record<NodeState, NodeStyle> = {
     width: 4,
     glyph: 'ring',
   },
-  done: { fill: 'var(--state-done-fill)', stroke: 'var(--state-done)', width: 3, glyph: 'check' },
+  done: { fill: 'var(--state-done-fill)', stroke: 'var(--state-done)', width: 3, glyph: 'none' },
   rejected: {
     fill: '#eef0f7',
     stroke: '#98a1c0',
@@ -63,67 +72,23 @@ function markerIdFor(state: EdgeState): string {
   return `arrow-${state}`;
 }
 
-interface Geometry {
-  path: string;
-  midX: number;
-  midY: number;
-}
-
-function straightGeometry(
-  ax: number,
-  ay: number,
-  bx: number,
-  by: number,
-  directed: boolean,
-): Geometry {
-  const dx = bx - ax;
-  const dy = by - ay;
-  const len = Math.hypot(dx, dy) || 1;
-  const ux = dx / len;
-  const uy = dy / len;
-  const gapEnd = directed ? R + 9 : R + 2;
-  const sx = ax + ux * (R + 2);
-  const sy = ay + uy * (R + 2);
-  const ex = bx - ux * gapEnd;
-  const ey = by - uy * gapEnd;
-  return {
-    path: `M ${sx} ${sy} L ${ex} ${ey}`,
-    midX: (sx + ex) / 2,
-    midY: (sy + ey) / 2,
-  };
-}
-
-function curvedGeometry(
-  ax: number,
-  ay: number,
-  bx: number,
-  by: number,
-  bend: number,
-  directed: boolean,
-): Geometry {
-  const dx = bx - ax;
-  const dy = by - ay;
-  const len = Math.hypot(dx, dy) || 1;
-  const ux = dx / len;
-  const uy = dy / len;
-  const nx = -uy;
-  const ny = ux;
-  const cx = (ax + bx) / 2 + nx * bend;
-  const cy = (ay + by) / 2 + ny * bend;
-
-  const toStart = Math.hypot(cx - ax, cy - ay) || 1;
-  const sx = ax + ((cx - ax) / toStart) * (R + 2);
-  const sy = ay + ((cy - ay) / toStart) * (R + 2);
-  const toEnd = Math.hypot(cx - bx, cy - by) || 1;
-  const gapEnd = directed ? R + 9 : R + 2;
-  const ex = bx + ((cx - bx) / toEnd) * gapEnd;
-  const ey = by + ((cy - by) / toEnd) * gapEnd;
-
-  return {
-    path: `M ${sx} ${sy} Q ${cx} ${cy} ${ex} ${ey}`,
-    midX: 0.25 * sx + 0.5 * cx + 0.25 * ex,
-    midY: 0.25 * sy + 0.5 * cy + 0.25 * ey,
-  };
+/**
+ * The rejected mark, drawn as a badge sitting on the rim: a filled disc keeps
+ * the cross legible where it overlaps the ring, and it rides in a gap between
+ * the node's edges so it never lands on a line.
+ */
+function RimMark({ cx, cy, color }: { cx: number; cy: number; color: string }) {
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={MARK_R} fill="var(--surface)" stroke={color} strokeWidth={1.6} />
+      <path
+        d={`M ${cx - 2.8} ${cy - 2.8} l 5.6 5.6 M ${cx + 2.8} ${cy - 2.8} l -5.6 5.6`}
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+    </g>
+  );
 }
 
 export interface GraphCanvasProps {
@@ -154,102 +119,12 @@ export function GraphCanvas({
   fit = false,
   ariaLabel,
 }: GraphCanvasProps) {
-  const pos = useMemo(() => {
-    const m = new Map<NodeId, { x: number; y: number }>();
-    for (const n of graph.nodes) m.set(n.id, { x: n.x, y: n.y });
-    return m;
-  }, [graph]);
+  const pos = useMemo(() => nodePositions(graph), [graph]);
+  const edgeGeo = useMemo(() => edgeGeometry(graph), [graph]);
+  const anchors = useMemo(() => nodeAnchors(graph, edgeGeo), [graph, edgeGeo]);
 
-  const antiParallel = useMemo(() => {
-    const set = new Set<string>();
-    if (!graph.directed) return set;
-    for (const e of graph.edges) {
-      const rev = graph.edges.find((o) => o.from === e.to && o.to === e.from);
-      if (rev) set.add(e.id);
-    }
-    return set;
-  }, [graph]);
-
-  /** Edge paths, shared by the renderer and by the badge placement below. */
-  const edgeGeo = useMemo(() => {
-    const m = new Map<string, Geometry>();
-    for (const e of graph.edges) {
-      const a = pos.get(e.from);
-      const b = pos.get(e.to);
-      if (!a || !b) continue;
-      const bend = antiParallel.has(e.id) ? 34 : 0;
-      m.set(
-        e.id,
-        bend
-          ? curvedGeometry(a.x, a.y, b.x, b.y, bend, graph.directed)
-          : straightGeometry(a.x, a.y, b.x, b.y, graph.directed),
-      );
-    }
-    return m;
-  }, [graph, pos, antiParallel]);
-
-  /**
-   * A distance label pinned under the node collides with any edge that leaves
-   * downward. Place it in the widest gap between this node's own edges, then
-   * prefer whichever of those gaps sits furthest from the weight labels and the
-   * other nodes, so it does not simply land on top of something else.
-   */
-  const badgeSpot = useMemo(() => {
-    const spot = new Map<NodeId, { x: number; y: number; ux: number; uy: number }>();
-    const DIST = R + 15;
-    const inFrame = (x: number, y: number) =>
-      x > 22 && x < graph.width - 22 && y > 14 && y < graph.height - 8;
-
-    const obstacles = [
-      ...[...edgeGeo.values()].map((g) => ({ x: g.midX, y: g.midY })),
-      ...graph.nodes.map((o) => ({ x: o.x, y: o.y })),
-    ];
-
-    for (const n of graph.nodes) {
-      const angles: number[] = [];
-      for (const e of graph.edges) {
-        const other =
-          e.from === n.id ? pos.get(e.to) : e.to === n.id ? pos.get(e.from) : undefined;
-        if (other) angles.push(Math.atan2(other.y - n.y, other.x - n.x));
-      }
-
-      // Directly below reads best when nothing is in the way
-      let best = Math.PI / 2;
-      if (angles.length > 0) {
-        angles.sort((a, b) => a - b);
-        const gaps = angles.map((a, i) => {
-          const next = i === angles.length - 1 ? angles[0] + Math.PI * 2 : angles[i + 1];
-          return { angle: (a + next) / 2, gap: next - a };
-        });
-
-        const scored = gaps.map((g) => {
-          const x = n.x + Math.cos(g.angle) * DIST;
-          const y = n.y + Math.sin(g.angle) * DIST;
-          let clearance = Infinity;
-          for (const o of obstacles) {
-            const d = Math.hypot(o.x - x, o.y - y);
-            // The node's own centre is always DIST away, so it is not an obstacle
-            if (d > 1 && d < clearance) clearance = d;
-          }
-          return { ...g, x, y, clearance, fits: inFrame(x, y) };
-        });
-
-        scored.sort((a, c) => {
-          if (a.fits !== c.fits) return a.fits ? -1 : 1;
-          // Anything past 34 units is clear enough, so the wider gap decides
-          const ca = Math.min(a.clearance, 34);
-          const cc = Math.min(c.clearance, 34);
-          return cc - ca || c.gap - a.gap;
-        });
-        best = scored[0].angle;
-      }
-
-      const ux = Math.cos(best);
-      const uy = Math.sin(best);
-      spot.set(n.id, { x: n.x + ux * DIST, y: n.y + uy * DIST, ux, uy });
-    }
-    return spot;
-  }, [graph, pos, edgeGeo]);
+  /** The frame is fitted to what is drawn, not to the authored canvas. */
+  const view = useMemo(() => graphView(graph), [graph]);
 
   const edgeState = (e: GraphEdge): EdgeState => frame?.edgeStates[e.id] ?? 'idle';
   const nodeState = (id: NodeId): NodeState => frame?.nodeStates[id] ?? 'idle';
@@ -266,12 +141,24 @@ export function GraphCanvas({
     return (maxLeft + minRight) / 2;
   }, [frame, graph]);
 
+  /**
+   * Client pixels to graph units. The svg meets its box rather than filling it,
+   * so a box with a different aspect leaves a band on two sides that has to
+   * come out before the scale is applied, or every click lands off target.
+   */
+  function toGraph(rect: DOMRect, clientX: number, clientY: number) {
+    const scale = Math.min(rect.width / view.w, rect.height / view.h);
+    const offsetX = (rect.width - view.w * scale) / 2;
+    const offsetY = (rect.height - view.h * scale) / 2;
+    return {
+      x: view.x + (clientX - rect.left - offsetX) / scale,
+      y: view.y + (clientY - rect.top - offsetY) / scale,
+    };
+  }
+
   function svgPoint(evt: React.MouseEvent<SVGSVGElement>): { x: number; y: number } {
-    const svg = evt.currentTarget;
-    const rect = svg.getBoundingClientRect();
-    const x = ((evt.clientX - rect.left) / rect.width) * graph.width;
-    const y = ((evt.clientY - rect.top) / rect.height) * graph.height;
-    return { x: Math.round(x), y: Math.round(y) };
+    const p = toGraph(evt.currentTarget.getBoundingClientRect(), evt.clientX, evt.clientY);
+    return { x: Math.round(p.x), y: Math.round(p.y) };
   }
 
   function handleDragStart(evt: React.MouseEvent<SVGGElement>, id: NodeId) {
@@ -282,12 +169,11 @@ export function GraphCanvas({
     if (!svg) return;
     const rect = svg.getBoundingClientRect();
     const move = (ev: MouseEvent) => {
-      const x = ((ev.clientX - rect.left) / rect.width) * graph.width;
-      const y = ((ev.clientY - rect.top) / rect.height) * graph.height;
+      const p = toGraph(rect, ev.clientX, ev.clientY);
       onNodeDrag(
         id,
-        Math.max(R + 4, Math.min(graph.width - R - 4, Math.round(x))),
-        Math.max(R + 4, Math.min(graph.height - R - 24, Math.round(y))),
+        Math.max(R + 4, Math.min(graph.width - R - 4, Math.round(p.x))),
+        Math.max(R + 4, Math.min(graph.height - R - 24, Math.round(p.y))),
       );
     };
     const up = () => {
@@ -310,7 +196,7 @@ export function GraphCanvas({
 
   return (
     <svg
-      viewBox={`0 0 ${graph.width} ${graph.height}`}
+      viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
       preserveAspectRatio="xMidYMid meet"
       className={fit ? 'select-none' : 'h-auto w-full select-none'}
       style={
@@ -348,16 +234,16 @@ export function GraphCanvas({
         <g>
           <line
             x1={cutLine}
-            y1={12}
+            y1={view.y + 12}
             x2={cutLine}
-            y2={graph.height - 12}
+            y2={view.y + view.h - 12}
             stroke="var(--ink-soft)"
             strokeWidth={2}
             strokeDasharray="10 7"
           />
           <text
             x={cutLine + 6}
-            y={22}
+            y={view.y + 22}
             fontSize={12}
             fill="var(--ink-soft)"
             fontFamily="'IBM Plex Sans Hebrew', sans-serif"
@@ -481,6 +367,10 @@ export function GraphCanvas({
         const st = nodeState(n.id);
         const style = NODE_STYLES[st];
         const badge = frame?.nodeBadges?.[n.id];
+        const at = anchors.get(n.id) ?? {
+          badge: { x: n.x, y: n.y + R + 15, ux: 0, uy: 1 },
+          mark: { ux: Math.SQRT1_2, uy: -Math.SQRT1_2 },
+        };
         const isHovered = hoveredNode === n.id;
         const isSelected = selectedNodes.includes(n.id);
         return (
@@ -544,38 +434,24 @@ export function GraphCanvas({
             >
               {n.id}
             </text>
-            {style.glyph === 'check' && (
-              <path
-                d={`M ${n.x + 10} ${n.y - 14} l 4 4 l 7 -8`}
-                fill="none"
-                stroke={style.stroke}
-                strokeWidth={2.4}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            )}
-            {style.glyph === 'dot' && (
-              <circle cx={n.x + 16} cy={n.y - 16} r={4} fill={style.stroke} />
-            )}
             {style.glyph === 'cross' && (
-              <path
-                d={`M ${n.x + 12} ${n.y - 18} l 8 8 M ${n.x + 20} ${n.y - 18} l -8 8`}
-                stroke={style.stroke}
-                strokeWidth={2}
-                strokeLinecap="round"
+              <RimMark
+                cx={n.x + at.mark.ux * markOffset(MARK_R)}
+                cy={n.y + at.mark.uy * markOffset(MARK_R)}
+                color={style.stroke}
               />
             )}
             {badge &&
               (() => {
-                const at = badgeSpot.get(n.id) ?? { x: n.x, y: n.y + R + 15, ux: 0, uy: 1 };
+                const spot = at.badge;
                 return (
                   <text
                     key={`${n.id}-${badge}`}
                     className="pop-in"
-                    x={at.x}
-                    y={at.y}
-                    textAnchor={at.ux > 0.4 ? 'start' : at.ux < -0.4 ? 'end' : 'middle'}
-                    dominantBaseline={at.uy > 0.4 ? 'hanging' : at.uy < -0.4 ? 'auto' : 'central'}
+                    x={spot.x}
+                    y={spot.y}
+                    textAnchor={spot.ux > 0.4 ? 'start' : spot.ux < -0.4 ? 'end' : 'middle'}
+                    dominantBaseline={spot.uy > 0.4 ? 'hanging' : spot.uy < -0.4 ? 'auto' : 'central'}
                     fontSize={13}
                     fontWeight={600}
                     fontFamily="'JetBrains Mono', monospace"

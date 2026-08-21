@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export type Speed = 'slow' | 'normal' | 'fast';
+/** The multiplier the rail shows. 1 is the slowest, for reading a step at a time. */
+export type Speed = 1 | 2 | 3;
 
-const DELAY: Record<Speed, number> = { slow: 1400, normal: 750, fast: 320 };
+const BASE_DELAY = 1400;
+
+export const SPEEDS: Speed[] = [1, 2, 3];
+
+function delayFor(speed: Speed): number {
+  return Math.round(BASE_DELAY / speed);
+}
 
 export function prefersReducedMotion(): boolean {
   if (typeof window === 'undefined' || !window.matchMedia) return false;
@@ -25,7 +32,7 @@ export interface Player {
 export function usePlayer(total: number, keyboard = true): Player {
   const [index, setIndexRaw] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState<Speed>('normal');
+  const [speed, setSpeed] = useState<Speed>(2);
   const reduced = useRef(prefersReducedMotion());
 
   const last = Math.max(0, total - 1);
@@ -60,7 +67,7 @@ export function usePlayer(total: number, keyboard = true): Player {
       setPlaying(false);
       return;
     }
-    const t = window.setTimeout(() => setIndexRaw((i) => Math.min(last, i + 1)), DELAY[speed]);
+    const t = window.setTimeout(() => setIndexRaw((i) => Math.min(last, i + 1)), delayFor(speed));
     return () => window.clearTimeout(t);
   }, [playing, index, last, speed]);
 

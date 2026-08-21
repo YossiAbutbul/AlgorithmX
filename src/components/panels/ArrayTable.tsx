@@ -12,8 +12,8 @@ export function ArrayTable({
   onHover?: (id: string | null) => void;
 }) {
   return (
-    <div>
-      <div className="scroll-x">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="scroll-x min-h-0 flex-1 overflow-y-auto">
         <table className="w-full border-collapse text-(length:--step-2)">
           <thead>
             <tr>
@@ -21,7 +21,8 @@ export function ArrayTable({
                 <th
                   key={c}
                   scope="col"
-                  className="num border-b border-line px-2 py-1 text-start text-(length:--step-1) font-semibold text-ink-soft"
+                  /* The rows scroll under the header, so the header stays put. */
+                  className="num sticky top-0 z-10 border-b border-line bg-sunken px-2 py-1 text-start text-(length:--step-1) font-semibold text-ink-soft"
                 >
                   {c}
                 </th>
@@ -63,7 +64,7 @@ export function ArrayTable({
           </tbody>
         </table>
       </div>
-      {view.note && <p className="mt-1 text-(length:--step-1) text-ink-soft">{view.note}</p>}
+      {view.note && <p className="mt-1 flex-none text-(length:--step-1) text-ink-soft">{view.note}</p>}
     </div>
   );
 }

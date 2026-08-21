@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Eye, GitCompareArrows, Network, Pencil, TriangleAlert, X } from 'lucide-react';
-import type { AlgorithmModule, GraphModel, NodeId } from '../algorithms/types';
+import type { AlgorithmModule, GraphModel, NodeId, NodeState } from '../algorithms/types';
 import { validateGraph } from '../algorithms/validate';
 import { AuxPanel } from './panels/AuxPanel';
 import { EVENT_COLOR, EVENT_LABEL } from './events';
 import { GraphCanvas } from './GraphCanvas';
+import { graphAspect } from './graphGeometry';
 import { GraphEditor } from './GraphEditor';
+import { NodeKey } from './Legend';
 import { Pseudocode } from './Pseudocode';
 import { TransportRail } from './TransportRail';
 import { usePlayer } from './usePlayer';
@@ -73,6 +75,20 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
 
   const player = usePlayer(frames.length);
   const frame = frames[Math.min(player.index, frames.length - 1)];
+
+  /** Which node colours this run actually reaches, for the key under the graph. */
+  const keyStates = useMemo(() => {
+    const seen = new Set<NodeState>();
+    for (const f of frames) for (const st of Object.values(f.nodeStates)) seen.add(st);
+    return [...seen];
+  }, [frames]);
+
+  const activeCode = useMemo(() => {
+    const i = frame?.codeLine;
+    if (i === undefined) return null;
+    const text = module.content.pseudocode[i];
+    return text === undefined ? null : { line: i + 1, text: text.trimEnd() };
+  }, [frame, module]);
   const openWarnings = validation.filter((v) => !dismissed.includes(v.text));
 
   return (
@@ -243,7 +259,7 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_330px]">
         <div
           className="run-stage stage min-w-0"
-          style={{ '--graph-aspect': `${graph.width} / ${graph.height}` } as CSSProperties}
+          style={{ '--graph-aspect': graphAspect(graph) } as CSSProperties}
         >
           <div className="stage-canvas">
             <GraphCanvas
@@ -255,23 +271,38 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
               ariaLabel={`הרצת ${module.shortHe} על הגרף`}
             />
           </div>
-          <p className="stage-caption" aria-live="polite">
-            {frame ? (
-              <span key={player.index} className="caption-swap flex items-start gap-2.5">
-                <span className="event-chip" style={{ background: EVENT_COLOR[frame.event] }}>
-                  {EVENT_LABEL[frame.event]}
+          <NodeKey states={keyStates} />
+
+          <div className="stage-caption">
+            <p aria-live="polite">
+              {frame ? (
+                <span key={player.index} className="caption-swap flex items-start gap-2.5">
+                  <span className="event-chip" style={{ background: EVENT_COLOR[frame.event] }}>
+                    {EVENT_LABEL[frame.event]}
+                  </span>
+                  <span>{frame.message}</span>
                 </span>
-                <span>{frame.message}</span>
-              </span>
-            ) : (
-              <span className="text-ink-soft">אין צעדים להצגה בגרף הזה.</span>
+              ) : (
+                <span className="text-ink-soft">אין צעדים להצגה בגרף הזה.</span>
+              )}
+            </p>
+            {/*
+             * The line the step is on, next to the step itself. The full listing
+             * is a panel away, so without this the tie between the run and the
+             * algorithm is only visible to whoever thinks to open it.
+             */}
+            {activeCode && (
+              <p dir="ltr" className="caption-code num" title="השורה בפסאודו-קוד">
+                <span className="caption-code-num">{activeCode.line}</span>
+                <span className="caption-code-text whitespace-pre">{activeCode.text}</span>
+              </p>
             )}
-          </p>
+          </div>
         </div>
 
         <aside className="run-aside">
           {frame ? (
-            <div className="card h-full overflow-y-auto p-3">
+            <div className="card flex h-full flex-col overflow-hidden p-3">
               <AuxPanel views={frame.aux} hovered={hovered} onHover={setHovered} />
             </div>
           ) : (
@@ -284,12 +315,8 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
         <TransportRail player={player} frames={frames} flow={graph.flow} />
       </div>
 
-      {/* Depth, on the same column grid so it lines up under the graph. */}
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_330px]">
-        <div className="min-w-0">
-          <Pseudocode lines={module.content.pseudocode} activeLine={frame?.codeLine} />
-        </div>
-      </div>
+      {/* Depth, spanning the stage so it matches the rail below the graph. */}
+      <Pseudocode lines={module.content.pseudocode} activeLine={frame?.codeLine} />
 
       {module.content.compareHint && onGoToCompare && (
         <div className="card flex flex-wrap items-center gap-3 px-4 py-3">

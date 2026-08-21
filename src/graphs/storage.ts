@@ -40,6 +40,18 @@ export function clearCustomGraph(moduleId: string): void {
   safeLocalStorage()?.removeItem(GRAPH_KEY(moduleId));
 }
 
+const PANEL_KEY = (id: string) => `algorithmx:panel:${id}`;
+
+/** Whether a disclosure panel was left open, so a run keeps it open. */
+export function savePanelOpen(id: string, open: boolean): void {
+  safeLocalStorage()?.setItem(PANEL_KEY(id), open ? '1' : '0');
+}
+
+export function loadPanelOpen(id: string, fallback: boolean): boolean {
+  const raw = safeLocalStorage()?.getItem(PANEL_KEY(id));
+  return raw === null || raw === undefined ? fallback : raw === '1';
+}
+
 export function saveLastTab(id: string): void {
   safeLocalStorage()?.setItem(TAB_KEY, id);
 }

@@ -6,6 +6,7 @@ import type { Frame, GraphModel, NodeId } from '../algorithms/types';
 import { AuxPanel } from '../components/panels/AuxPanel';
 import { EVENT_COLOR, EVENT_LABEL } from '../components/events';
 import { GraphCanvas } from '../components/GraphCanvas';
+import { graphAspect } from '../components/graphGeometry';
 import { TransportRail } from '../components/TransportRail';
 import { usePlayer } from '../components/usePlayer';
 import { COMPARE_PAIRS } from '../content/comparison';
@@ -30,7 +31,7 @@ function Side({ title, graph, frames, index, onSeek, synced }: SideProps) {
         style={
           {
             maxHeight: 'clamp(240px, 42vh, 420px)',
-            '--graph-aspect': `${graph.width} / ${graph.height}`,
+            '--graph-aspect': graphAspect(graph),
           } as CSSProperties
         }
       >

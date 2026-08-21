@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { loadPanelOpen, savePanelOpen } from '../graphs/storage';
 
 interface Props {
   title: string;
@@ -53,16 +55,35 @@ export function Accordion({
   icon: Icon,
   /** Code and tables fill their column instead of the reading measure. */
   wide = false,
+  /**
+   * Panels that carry the run itself stay open once opened. Without this the
+   * pseudo-code closes on every visit, and the line that tracks the step is
+   * work to get to rather than something you read as you go.
+   */
+  persistKey,
+  defaultOpen = false,
 }: {
   summary: string;
   children: ReactNode;
   id?: string;
   icon?: LucideIcon;
   wide?: boolean;
+  persistKey?: string;
+  defaultOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(() =>
+    persistKey ? loadPanelOpen(persistKey, defaultOpen) : defaultOpen,
+  );
+
   return (
     <details
       id={id}
+      open={open}
+      onToggle={(e) => {
+        const next = e.currentTarget.open;
+        setOpen(next);
+        if (persistKey) savePanelOpen(persistKey, next);
+      }}
       className="card group overflow-hidden"
       style={wide ? undefined : { maxWidth: '78ch' }}
     >
@@ -70,14 +91,15 @@ export function Accordion({
         className="flex cursor-pointer items-center gap-2 px-4 py-3 font-semibold"
         style={{ fontSize: 'var(--step-2)', minHeight: 'var(--tap)' }}
       >
+        {Icon && <Icon size={16} aria-hidden="true" style={{ color: 'var(--ink-soft)' }} />}
+        {summary}
+        {/* The chevron sits at the far edge of the header, opposite the label. */}
         <ChevronDown
           size={17}
           aria-hidden="true"
-          className="shrink-0 transition-transform group-open:rotate-180"
+          className="ms-auto shrink-0 transition-transform group-open:rotate-180"
           style={{ color: 'var(--accent)' }}
         />
-        {Icon && <Icon size={16} aria-hidden="true" style={{ color: 'var(--ink-soft)' }} />}
-        {summary}
       </summary>
       <div className="panel-in border-t border-line px-4 py-3">{children}</div>
     </details>

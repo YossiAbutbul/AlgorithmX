@@ -1,4 +1,4 @@
-import type { Frame } from '../algorithms/types';
+import type { Frame, NodeState } from '../algorithms/types';
 import { EVENT_COLOR, EVENT_LABEL } from './events';
 
 interface LegendProps {
@@ -7,27 +7,66 @@ interface LegendProps {
   frames?: Frame[];
 }
 
-const NODE_ITEMS = [
-  { label: 'לא נתגלה', fill: '#ffffff', stroke: 'var(--state-idle-line)', glyph: '' },
+const NODE_ITEMS: {
+  state: NodeState;
+  label: string;
+  short: string;
+  fill: string;
+  stroke: string;
+  glyph: string;
+}[] = [
   {
-    label: 'ממתין במבנה הנתונים',
-    fill: 'var(--state-frontier-fill)',
-    stroke: 'var(--state-frontier)',
-    glyph: 'dot',
+    state: 'idle',
+    label: 'לא נתגלה',
+    short: 'לא נתגלה',
+    fill: '#ffffff',
+    stroke: 'var(--state-idle-line)',
+    glyph: '',
   },
   {
+    state: 'frontier',
+    label: 'ממתין במבנה הנתונים',
+    short: 'ממתין',
+    fill: 'var(--state-frontier-fill)',
+    stroke: 'var(--state-frontier)',
+    glyph: '',
+  },
+  {
+    state: 'current',
     label: 'מטופל עכשיו',
+    short: 'מטופל עכשיו',
     fill: 'var(--state-current-fill)',
     stroke: 'var(--state-current)',
     glyph: 'ring',
   },
-  { label: 'סופי', fill: 'var(--state-done-fill)', stroke: 'var(--state-done)', glyph: 'check' },
-  { label: 'נבדק ונדחה', fill: '#eef0f7', stroke: '#98a1c0', glyph: 'cross' },
+  {
+    state: 'done',
+    label: 'סופי',
+    short: 'סופי',
+    fill: 'var(--state-done-fill)',
+    stroke: 'var(--state-done)',
+    glyph: '',
+  },
+  {
+    state: 'rejected',
+    label: 'נבדק ונדחה',
+    short: 'נדחה',
+    fill: '#eef0f7',
+    stroke: '#98a1c0',
+    glyph: 'cross',
+  },
 ];
 
+/**
+ * The same node the graph draws, at key size. Only the rejected state carries a
+ * mark; the others are told apart by fill and ring alone.
+ */
 function NodeSwatch({ fill, stroke, glyph }: { fill: string; stroke: string; glyph: string }) {
+  // Up and to the right, the way an unobstructed mark sits on the graph
+  const mx = 13 + 7.4;
+  const my = 13 - 7.4;
   return (
-    <svg width="30" height="26" viewBox="0 0 30 26" aria-hidden="true">
+    <svg width="32" height="26" viewBox="0 0 32 26" aria-hidden="true">
       {glyph === 'ring' && (
         <circle cx="13" cy="13" r="11" fill="none" stroke={stroke} strokeWidth="1" />
       )}
@@ -40,18 +79,16 @@ function NodeSwatch({ fill, stroke, glyph }: { fill: string; stroke: string; gly
         strokeWidth={glyph === 'ring' ? 3 : 2}
         strokeDasharray={glyph === 'cross' ? '4 3' : undefined}
       />
-      {glyph === 'check' && (
-        <path
-          d="M 20 5 l 2.5 2.5 l 5 -5"
-          fill="none"
-          stroke={stroke}
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      )}
-      {glyph === 'dot' && <circle cx="23" cy="5" r="3" fill={stroke} />}
       {glyph === 'cross' && (
-        <path d="M 21 3 l 5 5 M 26 3 l -5 5" stroke={stroke} strokeWidth="1.8" />
+        <>
+          <circle cx={mx} cy={my} r="4.6" fill="var(--surface)" stroke={stroke} strokeWidth="1.2" />
+          <path
+            d={`M ${mx - 1.8} ${my - 1.8} l 3.6 3.6 M ${mx + 1.8} ${my - 1.8} l -3.6 3.6`}
+            stroke={stroke}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </>
       )}
     </svg>
   );
@@ -89,8 +126,30 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 }
 
 /**
- * Opened from the rail, not pinned open under the graph. Reference material
- * should be one click away, not competing with the run for attention.
+ * The node colours are the one part of the key you need while the run is
+ * moving, so they sit under the graph rather than behind a click. Only the
+ * states this particular run actually reaches are listed: a key is easier to
+ * trust when nothing on it is unreachable.
+ */
+export function NodeKey({ states }: { states: NodeState[] }) {
+  const present = NODE_ITEMS.filter((item) => states.includes(item.state));
+  if (present.length < 2) return null;
+
+  return (
+    <div className="stage-key" aria-label="מקרא הצמתים">
+      {present.map((item) => (
+        <span key={item.state} className="flex flex-none items-center gap-1">
+          <NodeSwatch fill={item.fill} stroke={item.stroke} glyph={item.glyph} />
+          {item.short}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The full reference, opened from the rail. Edge styles and the scrubber's
+ * colours are the part that genuinely needs the room.
  */
 export function Legend({ flow = false, frames }: LegendProps) {
   const edgeItems = [

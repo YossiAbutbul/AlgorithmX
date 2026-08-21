@@ -44,15 +44,43 @@ function renderView(
   }
 }
 
+/**
+ * A queue or a set is as tall as what it holds. A table or a matrix can be
+ * taller than the rail, so those are the ones that take the leftover height and
+ * scroll inside themselves, instead of the whole card scrolling and carrying
+ * every heading off the top with it.
+ */
+const FILLS_COLUMN: Record<AuxView['kind'], boolean> = {
+  queue: false,
+  stack: false,
+  priorityQueue: false,
+  setView: false,
+  arrayTable: true,
+  matrix: true,
+  edgeList: true,
+  disjointSet: true,
+  flowTable: true,
+};
+
 export function AuxPanel({ views, hovered, onHover }: Props) {
   return (
-    <div className="flex flex-col gap-3">
-      {views.map((view, i) => (
-        <section key={`${view.kind}-${i}`} className="panel-in card-quiet p-3">
-          <h4 className="mb-2 text-(length:--step-2) text-ink-soft">{view.title}</h4>
-          {renderView(view, hovered, onHover)}
-        </section>
-      ))}
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      {views.map((view, i) => {
+        const fills = FILLS_COLUMN[view.kind];
+        return (
+          <section
+            key={`${view.kind}-${i}`}
+            className={`panel-in card-quiet flex flex-col p-3 ${
+              fills ? 'min-h-0 flex-1' : 'flex-none'
+            }`}
+          >
+            <h4 className="mb-2 flex-none text-(length:--step-2) text-ink-soft">{view.title}</h4>
+            <div className={fills ? 'flex min-h-0 flex-1 flex-col' : undefined}>
+              {renderView(view, hovered, onHover)}
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
 }

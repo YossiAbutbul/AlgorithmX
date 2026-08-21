@@ -103,8 +103,11 @@ export function AlgorithmPage({
       {/*
        * The title is stated once. The section tab in the header says which part
        * you are on, so the old card header and its second numbering are gone.
+       * The facts ride on the title's line rather than under it: they never
+       * change during a run, and the row they used to own is height the graph
+       * needs more.
        */}
-      <header className="flex flex-col gap-1 pb-3 pt-4">
+      <header className="flex flex-wrap items-baseline gap-x-3.5 gap-y-1 pb-2 pt-3">
         <div className="flex flex-wrap items-center gap-2.5">
           <h1 style={{ fontSize: 'var(--step-5)' }}>{module.titleHe}</h1>
           {prereqs.length > 0 && (

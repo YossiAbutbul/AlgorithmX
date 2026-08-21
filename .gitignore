@@ -4,4 +4,4 @@ dist
 *.local
 *.tsbuildinfo
 .wrangler
-.claude
+.claude/settings.local.json

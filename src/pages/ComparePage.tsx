@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { ChevronLeft, ChevronRight, Unlink } from 'lucide-react';
 import { ALGORITHMS, getAlgorithm } from '../algorithms';
 import type { Frame, GraphModel, NodeId } from '../algorithms/types';
@@ -24,7 +25,15 @@ function Side({ title, graph, frames, index, onSeek, synced }: SideProps) {
   const frame = frames[i];
   return (
     <section className="flex flex-col gap-3">
-      <div className="stage" style={{ height: 'clamp(240px, 42vh, 420px)' }}>
+      <div
+        className="stage"
+        style={
+          {
+            maxHeight: 'clamp(240px, 42vh, 420px)',
+            '--graph-aspect': `${graph.width} / ${graph.height}`,
+          } as CSSProperties
+        }
+      >
         <header className="flex flex-none items-baseline justify-between gap-2 border-b border-line-soft px-3 py-2">
           <h2 style={{ fontSize: 'var(--step-3)' }}>{title}</h2>
           <span dir="ltr" className="num text-ink-soft" style={{ fontSize: 'var(--step-1)' }}>

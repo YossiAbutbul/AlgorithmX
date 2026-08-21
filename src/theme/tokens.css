@@ -370,19 +370,15 @@
 
 @utility run-stage {
   /*
-   * The stage takes whatever the viewport has left after the header and the
-   * rail, so graph plus narration plus controls always land on one screen.
+   * The canvas carries the graph's own aspect so the drawing fills the box
+   * rather than floating in a band of empty space. The stage only clamps when
+   * that height would push the rail off the first screen.
    */
-  height: var(--stage-h);
+  height: auto;
+  max-height: var(--stage-h);
 
   @media (max-width: 639px) {
-    /* On a phone the graph keeps its own aspect instead of letterboxing into a
-       tall column, and the freed height goes to the data structures. */
-    height: auto;
-
-    & .stage-canvas {
-      aspect-ratio: 2 / 1.15;
-    }
+    max-height: none;
   }
 }
 
@@ -392,7 +388,15 @@
   min-width: 0;
 
   @media (min-width: 1024px) {
-    height: var(--stage-h);
+    /* The card is taken out of flow so it cannot size the grid row. The row is
+       the stage's height, the card fills it, and a tall structure scrolls. */
+    position: relative;
+    min-height: 0;
+
+    & > * {
+      position: absolute;
+      inset: 0;
+    }
   }
 }
 
@@ -415,13 +419,10 @@
 }
 
 @utility stage-canvas {
-  @media (max-width: 639px) {
-    .run-stage & {
-      aspect-ratio: 2 / 1.15;
-    }
-  }
   flex: 1 1 auto;
   min-height: 0;
+  /* Set per graph by the run panel, so every preset fills its own box. */
+  aspect-ratio: var(--graph-aspect, 2);
   padding: 6px;
 
   & svg {
@@ -981,13 +982,20 @@
 }
 
 .sr-only {
+  /*
+   * Pinned to the start corner rather than left at its static position, and
+   * clipped with clip-path instead of the legacy negative margin, which used to
+   * push the box one pixel past the edge and give the page a scrollbar.
+   */
   position: absolute;
+  top: 0;
+  inset-inline-start: 0;
   width: 1px;
   height: 1px;
   padding: 0;
-  margin: -1px;
+  margin: 0;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
 }

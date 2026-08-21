@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { Eye, GitCompareArrows, Network, Pencil, TriangleAlert, X } from 'lucide-react';
 import type { AlgorithmModule, GraphModel, NodeId } from '../algorithms/types';
 import { validateGraph } from '../algorithms/validate';
@@ -18,6 +19,13 @@ interface Props {
 }
 
 export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
+  const pickedByPointer = useRef(false);
+  const releaseAfterPointer = (el: HTMLElement) => {
+    if (!pickedByPointer.current) return;
+    pickedByPointer.current = false;
+    el.blur();
+  };
+
   const [presetId, setPresetId] = useState(module.presetGraphs[0].id);
   const [custom, setCustom] = useState<GraphModel | null>(() => loadCustomGraph(module.id));
   const [editing, setEditing] = useState(false);
@@ -70,7 +78,8 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
   return (
     <div className="flex flex-col gap-3">
       {/* Setup, on one line. It used to take four stacked rows above the graph. */}
-      <div className="no-scrollbar fade-end flex items-center gap-2">
+      <div className="flex items-center gap-2">
+        <div className="no-scrollbar fade-end flex min-w-0 flex-1 items-center gap-2">
         <span className="flex flex-none items-center gap-1.5 text-ink-faint" style={{ fontSize: 'var(--step-1)', fontWeight: 500 }}>
           <Network size={14} aria-hidden="true" />
           גרף
@@ -104,7 +113,11 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
             <select
               className="btn btn-sm num"
               value={source ?? ''}
-              onChange={(e) => setSource(e.target.value)}
+              onPointerDown={() => (pickedByPointer.current = true)}
+              onChange={(e) => {
+                setSource(e.target.value);
+                releaseAfterPointer(e.currentTarget);
+              }}
               aria-label="צומת מקור"
             >
               {graph.nodes.map((n) => (
@@ -123,7 +136,11 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
             <select
               className="btn btn-sm num"
               value={sink ?? ''}
-              onChange={(e) => setSink(e.target.value)}
+              onPointerDown={() => (pickedByPointer.current = true)}
+              onChange={(e) => {
+                setSink(e.target.value);
+                releaseAfterPointer(e.currentTarget);
+              }}
               aria-label="צומת בור"
             >
               {graph.nodes.map((n) => (
@@ -147,7 +164,9 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
           </label>
         )}
 
-        <button className="btn btn-sm ms-auto flex-none" onClick={() => setEditing((v) => !v)}>
+        </div>
+
+        <button className="btn btn-sm flex-none" onClick={() => setEditing((v) => !v)}>
           {editing ? <X size={15} aria-hidden="true" /> : <Pencil size={15} aria-hidden="true" />}
           <span className="hidden sm:inline">{editing ? 'סגור עורך' : 'ערוך גרף'}</span>
         </button>
@@ -222,7 +241,10 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
        */}
       {/* Graph on the reading side, its data structures beside it on the left. */}
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_330px]">
-        <div className="run-stage stage">
+        <div
+          className="run-stage stage min-w-0"
+          style={{ '--graph-aspect': `${graph.width} / ${graph.height}` } as CSSProperties}
+        >
           <div className="stage-canvas">
             <GraphCanvas
               graph={graph}
@@ -262,8 +284,12 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
         <TransportRail player={player} frames={frames} flow={graph.flow} />
       </div>
 
-      {/* Depth. Reached by scrolling on purpose, not scrolled past by accident. */}
-      <Pseudocode lines={module.content.pseudocode} activeLine={frame?.codeLine} />
+      {/* Depth, on the same column grid so it lines up under the graph. */}
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_330px]">
+        <div className="min-w-0">
+          <Pseudocode lines={module.content.pseudocode} activeLine={frame?.codeLine} />
+        </div>
+      </div>
 
       {module.content.compareHint && onGoToCompare && (
         <div className="card flex flex-wrap items-center gap-3 px-4 py-3">

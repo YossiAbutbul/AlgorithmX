@@ -51,14 +51,21 @@ export function Accordion({
   children,
   id,
   icon: Icon,
+  /** Code and tables fill their column instead of the reading measure. */
+  wide = false,
 }: {
   summary: string;
   children: ReactNode;
   id?: string;
   icon?: LucideIcon;
+  wide?: boolean;
 }) {
   return (
-    <details id={id} className="card group overflow-hidden" style={{ maxWidth: '78ch' }}>
+    <details
+      id={id}
+      className="card group overflow-hidden"
+      style={wide ? undefined : { maxWidth: '78ch' }}
+    >
       <summary
         className="flex cursor-pointer items-center gap-2 px-4 py-3 font-semibold"
         style={{ fontSize: 'var(--step-2)', minHeight: 'var(--tap)' }}

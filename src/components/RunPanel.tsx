@@ -249,7 +249,7 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
 
         <aside className="run-aside">
           {frame ? (
-            <div className="card p-3">
+            <div className="card h-full overflow-y-auto p-3">
               <AuxPanel views={frame.aux} hovered={hovered} onHover={setHovered} />
             </div>
           ) : (

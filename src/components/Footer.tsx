@@ -14,7 +14,7 @@ function GithubMark() {
 export function Footer() {
   return (
     <footer className="app-footer">
-      <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between gap-2 px-4 py-2 text-[12px] leading-none">
+      <div className="flex w-full items-center justify-between gap-2 px-3 py-2 text-[12px] leading-none sm:px-4 lg:px-6">
         <span className="flex items-baseline gap-2 whitespace-nowrap text-[12px] leading-none">
           <span
             className="tracking-tight"

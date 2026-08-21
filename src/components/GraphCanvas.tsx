@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type {
+  EdgeId,
   EdgeState,
   Frame,
   GraphEdge,
@@ -72,6 +73,11 @@ function markerIdFor(state: EdgeState): string {
   return `arrow-${state}`;
 }
 
+/** The soft companion to a role's line colour, for the editor's endpoint nodes. */
+function roleFill(color: string): string {
+  return color === 'var(--state-done)' ? 'var(--state-done-fill)' : 'var(--state-frontier-fill)';
+}
+
 /**
  * The rejected mark, drawn as a badge sitting on the rim: a filled disc keeps
  * the cross legible where it overlaps the ring, and it rides in a gap between
@@ -97,9 +103,22 @@ export interface GraphCanvasProps {
   hoveredNode?: NodeId | null;
   onHoverNode?: (id: NodeId | null) => void;
   onNodeClick?: (id: NodeId) => void;
+  onEdgeClick?: (id: EdgeId) => void;
   onCanvasClick?: (x: number, y: number) => void;
   onNodeDrag?: (id: NodeId, x: number, y: number) => void;
+  /** Fired once when a drag finishes, so the editor can close its undo step. */
+  onNodeDragEnd?: () => void;
   selectedNodes?: NodeId[];
+  selectedEdge?: EdgeId | null;
+  /** The editor marks the run's endpoints, which have no frame to colour them. */
+  sourceNode?: NodeId;
+  sinkNode?: NodeId;
+  /** The pointer's meaning changes with the editor's tool. */
+  canvasCursor?: 'default' | 'copy' | 'crosshair';
+  /** A connection waiting for its second node, drawn as a line to the cursor. */
+  linkFrom?: NodeId | null;
+  /** Dropping the rim handle on another node connects the two. */
+  onConnect?: (from: NodeId, to: NodeId) => void;
   compact?: boolean;
   /** Fill the parent box instead of capping at a fixed height. */
   fit?: boolean;
@@ -112,9 +131,17 @@ export function GraphCanvas({
   hoveredNode,
   onHoverNode,
   onNodeClick,
+  onEdgeClick,
   onCanvasClick,
   onNodeDrag,
+  onNodeDragEnd,
   selectedNodes = [],
+  selectedEdge = null,
+  sourceNode,
+  sinkNode,
+  canvasCursor = 'default',
+  linkFrom = null,
+  onConnect,
   compact = false,
   fit = false,
   ariaLabel,
@@ -125,6 +152,12 @@ export function GraphCanvas({
 
   /** The frame is fitted to what is drawn, not to the authored canvas. */
   const view = useMemo(() => graphView(graph), [graph]);
+
+  /** A connection being dragged off a node's rim handle. */
+  const [linkDrag, setLinkDrag] = useState<{ from: NodeId; x: number; y: number } | null>(null);
+  /** Where the cursor is, so a pending connection can follow it. */
+  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+  const [hoverEdge, setHoverEdge] = useState<EdgeId | null>(null);
 
   const edgeState = (e: GraphEdge): EdgeState => frame?.edgeStates[e.id] ?? 'idle';
   const nodeState = (id: NodeId): NodeState => frame?.nodeStates[id] ?? 'idle';
@@ -161,6 +194,39 @@ export function GraphCanvas({
     return { x: Math.round(p.x), y: Math.round(p.y) };
   }
 
+  /**
+   * Dragging a node's rim handle onto another node connects the two. Picking a
+   * tool first, clicking one node, then clicking the other works as well, but
+   * this is the path that costs no trip to the toolbar.
+   */
+  function handleLinkStart(evt: React.MouseEvent<SVGCircleElement>, id: NodeId) {
+    if (!onConnect) return;
+    evt.preventDefault();
+    evt.stopPropagation();
+    const svg = evt.currentTarget.ownerSVGElement;
+    const from = graph.nodes.find((n) => n.id === id);
+    if (!svg || !from) return;
+    const rect = svg.getBoundingClientRect();
+    setLinkDrag({ from: id, x: from.x, y: from.y });
+
+    const move = (ev: MouseEvent) => {
+      const p = toGraph(rect, ev.clientX, ev.clientY);
+      setLinkDrag({ from: id, x: p.x, y: p.y });
+    };
+    const up = (ev: MouseEvent) => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+      setLinkDrag(null);
+      const p = toGraph(rect, ev.clientX, ev.clientY);
+      const target = graph.nodes.find(
+        (n) => n.id !== id && Math.hypot(n.x - p.x, n.y - p.y) <= R + 8,
+      );
+      if (target) onConnect(id, target.id);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  }
+
   function handleDragStart(evt: React.MouseEvent<SVGGElement>, id: NodeId) {
     if (!onNodeDrag) return;
     evt.preventDefault();
@@ -179,6 +245,7 @@ export function GraphCanvas({
     const up = () => {
       window.removeEventListener('mousemove', move);
       window.removeEventListener('mouseup', up);
+      onNodeDragEnd?.();
     };
     window.addEventListener('mousemove', move);
     window.addEventListener('mouseup', up);
@@ -206,11 +273,17 @@ export function GraphCanvas({
       }
       role="img"
       aria-label={ariaLabel ?? 'תרשים הגרף'}
+      cursor={canvasCursor === 'default' ? undefined : canvasCursor}
       onClick={(e) => {
         if (!onCanvasClick) return;
         const p = svgPoint(e);
         onCanvasClick(p.x, p.y);
       }}
+      onMouseMove={(e) => {
+        if (!linkFrom) return;
+        setPointer(svgPoint(e));
+      }}
+      onMouseLeave={() => setPointer(null)}
     >
       <defs>
         {states.map((s) => (
@@ -264,11 +337,44 @@ export function GraphCanvas({
         const onPath = frame?.pathEdges?.includes(e.id);
         const isCut = frame?.cutEdges?.includes(e.id);
         const label = frame?.edgeBadges?.[e.id] ?? (graph.weighted ? String(e.weight) : '');
+        // Fading a node's neighbours reads well during a run and gets in the way
+        // while editing, where every edge stays a target.
         const dim =
-          hoveredNode != null && e.from !== hoveredNode && e.to !== hoveredNode ? 0.35 : 1;
+          !onEdgeClick && hoveredNode != null && e.from !== hoveredNode && e.to !== hoveredNode
+            ? 0.35
+            : 1;
+
+        const isPicked = selectedEdge === e.id;
 
         return (
           <g key={e.id} opacity={dim}>
+            {/* A two pixel line is a hard target, so the editor gets a wide one. */}
+            {onEdgeClick && (
+              <path
+                d={geo.path}
+                fill="none"
+                stroke="transparent"
+                strokeWidth={18}
+                strokeLinecap="round"
+                style={{ cursor: 'pointer' }}
+                onMouseEnter={() => setHoverEdge(e.id)}
+                onMouseLeave={() => setHoverEdge((h) => (h === e.id ? null : h))}
+                onClick={(ev) => {
+                  ev.stopPropagation();
+                  onEdgeClick(e.id);
+                }}
+              />
+            )}
+            {(isPicked || hoverEdge === e.id) && (
+              <path
+                d={geo.path}
+                fill="none"
+                stroke="var(--accent)"
+                strokeWidth={style.width + 6}
+                strokeLinecap="round"
+                opacity={isPicked ? 0.28 : 0.14}
+              />
+            )}
             {onPath && (
               <path
                 d={geo.path}
@@ -313,8 +419,14 @@ export function GraphCanvas({
                   height={19}
                   rx={6}
                   fill="var(--surface)"
-                  stroke={isCut ? 'var(--state-current)' : 'var(--line)'}
-                  strokeWidth={isCut ? 1.6 : 1}
+                  stroke={
+                    isPicked
+                      ? 'var(--accent)'
+                      : isCut
+                        ? 'var(--state-current)'
+                        : 'var(--line)'
+                  }
+                  strokeWidth={isCut || isPicked ? 1.6 : 1}
                 />
                 <text
                   x={geo.midX}
@@ -363,6 +475,30 @@ export function GraphCanvas({
         );
       })}
 
+      {/* The connection being made, following the cursor until it lands. */}
+      {(() => {
+        const from = linkDrag
+          ? graph.nodes.find((n) => n.id === linkDrag.from)
+          : linkFrom
+            ? graph.nodes.find((n) => n.id === linkFrom)
+            : undefined;
+        const to = linkDrag ?? pointer;
+        if (!from || !to) return null;
+        return (
+          <line
+            x1={from.x}
+            y1={from.y}
+            x2={to.x}
+            y2={to.y}
+            stroke="var(--accent)"
+            strokeWidth={2.5}
+            strokeDasharray="7 5"
+            strokeLinecap="round"
+            pointerEvents="none"
+          />
+        );
+      })()}
+
       {graph.nodes.map((n) => {
         const st = nodeState(n.id);
         const style = NODE_STYLES[st];
@@ -373,6 +509,12 @@ export function GraphCanvas({
         };
         const isHovered = hoveredNode === n.id;
         const isSelected = selectedNodes.includes(n.id);
+        const role =
+          n.id === sourceNode
+            ? { label: 'מקור', color: 'var(--state-frontier)' }
+            : n.id === sinkNode
+              ? { label: 'בור', color: 'var(--state-done)' }
+              : null;
         return (
           <g
             key={n.id}
@@ -397,6 +539,23 @@ export function GraphCanvas({
                 strokeDasharray={isSelected ? undefined : '4 4'}
               />
             )}
+            {role && (
+              <text
+                x={n.x}
+                y={n.y - R - 9}
+                textAnchor="middle"
+                fontSize={11}
+                fontWeight={700}
+                fontFamily="'IBM Plex Sans Hebrew', sans-serif"
+                fill={role.color}
+                stroke="var(--surface)"
+                strokeWidth={3}
+                strokeLinejoin="round"
+                paintOrder="stroke"
+              >
+                {role.label}
+              </text>
+            )}
             {style.glyph === 'ring' && (
               <circle
                 className="node-pulse"
@@ -415,9 +574,9 @@ export function GraphCanvas({
               cx={n.x}
               cy={n.y}
               r={R}
-              fill={style.fill}
-              stroke={style.stroke}
-              strokeWidth={style.width}
+              fill={role && !frame ? roleFill(role.color) : style.fill}
+              stroke={role && !frame ? role.color : style.stroke}
+              strokeWidth={role && !frame ? 3 : style.width}
               strokeDasharray={style.dash}
               style={{
                 transition: 'fill .24s ease, stroke .24s ease, stroke-width .24s ease',
@@ -440,6 +599,33 @@ export function GraphCanvas({
                 cy={n.y + at.mark.uy * markOffset(MARK_R)}
                 color={style.stroke}
               />
+            )}
+            {/*
+              * The handle only shows on the node you are pointing at, so the
+              * graph stays clean until you reach for it.
+              */}
+            {onConnect && (isHovered || isSelected) && !linkDrag && (
+              <g
+                style={{ cursor: 'crosshair' }}
+                onMouseDown={(ev) => handleLinkStart(ev as unknown as React.MouseEvent<SVGCircleElement>, n.id)}
+              >
+                <circle
+                  cx={n.x + at.mark.ux * (R + 9)}
+                  cy={n.y + at.mark.uy * (R + 9)}
+                  r={8}
+                  fill="var(--accent)"
+                  stroke="var(--surface)"
+                  strokeWidth={2}
+                />
+                <path
+                  d={`M ${n.x + at.mark.ux * (R + 9) - 3.6} ${n.y + at.mark.uy * (R + 9)} h 7.2
+                      M ${n.x + at.mark.ux * (R + 9)} ${n.y + at.mark.uy * (R + 9) - 3.6} v 7.2`}
+                  stroke="#fff"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  pointerEvents="none"
+                />
+              </g>
             )}
             {badge &&
               (() => {

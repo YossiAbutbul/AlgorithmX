@@ -480,12 +480,50 @@
   line-height: 1.4;
 }
 
+@utility toolgroup {
+  /* One tool at a time, shown as a segmented control inside the rail. */
+  display: flex;
+  flex: none;
+  gap: 0.2rem;
+  padding: 0.15rem;
+  background: var(--surface-sunken);
+  border-radius: 11px;
+
+  & .btn {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  & .btn[aria-pressed='true'] {
+    background: var(--surface);
+    border-color: var(--accent);
+    color: var(--accent-strong);
+    font-weight: 600;
+  }
+}
+
+@utility btn-danger {
+  border-color: #f0b6c0;
+  background: #fff5f7;
+  color: #b32540;
+
+  &:hover:not(:disabled) {
+    background: #ffe9ee;
+    border-color: #e59aa8;
+  }
+}
+
 @utility stage-key {
-  /* The node colours, pinned under the graph. Reference you read while running. */
+  /*
+   * The node colours while a run is up, the active tool while editing. One row
+   * with one height, so opening the editor cannot move anything below it.
+   */
   flex: none;
   display: flex;
   align-items: center;
   gap: 0.9rem;
+  min-height: 35px;
   overflow-x: auto;
   scrollbar-width: none;
   padding: 0.25rem 0.9rem;
@@ -494,6 +532,13 @@
   color: var(--ink-soft);
   font-size: var(--step-1);
   white-space: nowrap;
+}
+
+@utility caption-sub {
+  /* The caption's second row keeps its height whatever fills it. */
+  display: flex;
+  align-items: center;
+  min-height: 24px;
 }
 
 @utility caption-code {

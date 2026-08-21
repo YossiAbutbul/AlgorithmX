@@ -7,7 +7,9 @@ import { AuxPanel } from './panels/AuxPanel';
 import { EVENT_COLOR, EVENT_LABEL } from './events';
 import { GraphCanvas } from './GraphCanvas';
 import { graphAspect } from './graphGeometry';
-import { GraphEditor } from './GraphEditor';
+import { EditorRail } from './editor/EditorRail';
+import { EditorTools } from './editor/EditorTools';
+import { useGraphDraft } from './editor/useGraphDraft';
 import { NodeKey } from './Legend';
 import { Pseudocode } from './Pseudocode';
 import { TransportRail } from './TransportRail';
@@ -60,10 +62,82 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presetId, custom]);
 
+  /*
+   * The editor works on a draft of whatever graph is on screen, and the stage
+   * draws that draft. The run keeps drawing the saved graph, so switching modes
+   * swaps what is in the rail and the bar and nothing else.
+   */
+  const draft = useGraphDraft(graph, graph.flow ? 'קיבול' : 'משקל');
+  const shown = editing ? draft.graph : graph;
+
   const validation = useMemo(
     () => validateGraph(module, graph, source, sink),
     [module, graph, source, sink],
   );
+
+  const draftNotes = useMemo(
+    () => (editing ? validateGraph(module, draft.graph, source, sink) : []),
+    [editing, module, draft.graph, source, sink],
+  );
+  const draftWarning = draftNotes[0]?.text;
+
+  const selectedNodes = useMemo(() => {
+    const picked = draft.selection?.type === 'node' ? [draft.selection.id] : [];
+    return draft.linkFrom ? [...new Set([draft.linkFrom, ...picked])] : picked;
+  }, [draft.selection, draft.linkFrom]);
+
+  const toolHint =
+    draft.tool === 'add'
+      ? 'לחיצה על שטח ריק מוסיפה צומת, והכלי חוזר לבחירה.'
+      : draft.tool === 'connect'
+        ? draft.linkFrom
+          ? `נבחר ${draft.linkFrom}. לחץ על הצומת השני.`
+          : 'לחיצה על שני צמתים מחברת ביניהם.'
+        : 'גרירה מזיזה צומת, וגרירה מהנקודה שעל המסגרת מחברת אותו לצומת אחר.';
+
+  const selectionLine =
+    draft.selection?.type === 'node'
+      ? `צומת ${draft.selection.id} נבחר. המאפיינים שלו בסרגל.`
+      : draft.selection?.type === 'edge'
+        ? 'צלע נבחרה. המשקל והמחיקה בסרגל.'
+        : 'עריכת הגרף. בחר צומת או צלע כדי לערוך אותם.';
+
+  useEffect(() => {
+    if (!editing) return;
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName ?? '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        draft.deleteSelection();
+      } else if (e.key === 'Escape') {
+        draft.cancelLink();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) draft.redo();
+        else draft.undo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        draft.redo();
+      } else if (e.key.startsWith('Arrow') && draft.selection?.type === 'node') {
+        // Nudging beats dragging when a node needs to line up with its neighbours
+        e.preventDefault();
+        const step = e.shiftKey ? 10 : 2;
+        const dx = e.key === 'ArrowRight' ? step : e.key === 'ArrowLeft' ? -step : 0;
+        const dy = e.key === 'ArrowDown' ? step : e.key === 'ArrowUp' ? -step : 0;
+        draft.nudge(draft.selection.id, dx, dy);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [editing, draft]);
+
+  function saveDraft() {
+    saveCustomGraph(module.id, draft.graph);
+    setCustom(draft.graph);
+    setPresetId('custom');
+    setEditing(false);
+  }
 
   const frames = useMemo(() => {
     try {
@@ -73,7 +147,8 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
     }
   }, [module, graph, source, sink, showNoChange]);
 
-  const player = usePlayer(frames.length);
+  /* The editor owns the keyboard while it is open, so space cannot start a run. */
+  const player = usePlayer(frames.length, !editing);
   const frame = frames[Math.min(player.index, frames.length - 1)];
 
   /** Which node colours this run actually reaches, for the key under the graph. */
@@ -232,24 +307,6 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
         </div>
       ))}
 
-      {editing && (
-        <div className="panel-in">
-          <GraphEditor
-            module={module}
-            graph={graph}
-            onSave={(g) => {
-              saveCustomGraph(module.id, g);
-              setCustom(g);
-              setPresetId('custom');
-            }}
-            onReset={() => {
-              setPresetId(module.presetGraphs[0].id);
-              setEditing(false);
-            }}
-          />
-        </div>
-      )}
-
       {/*
        * The stage: graph and narration as one surface, sized to what is left of
        * the viewport, with the rail docked under it. Everything a run needs is
@@ -263,17 +320,62 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
         >
           <div className="stage-canvas">
             <GraphCanvas
-              graph={graph}
-              frame={frame}
+              graph={shown}
+              frame={editing ? undefined : frame}
               hoveredNode={hovered}
               onHoverNode={setHovered}
+              onNodeClick={editing ? draft.onNodeClick : undefined}
+              onEdgeClick={editing ? draft.onEdgeClick : undefined}
+              onCanvasClick={editing ? draft.onCanvasClick : undefined}
+              onNodeDrag={editing && draft.tool === 'select' ? draft.onNodeDrag : undefined}
+              onNodeDragEnd={editing ? draft.onNodeDragEnd : undefined}
+              selectedNodes={editing ? selectedNodes : []}
+              selectedEdge={editing && draft.selection?.type === 'edge' ? draft.selection.id : null}
+              sourceNode={editing && module.needsSource ? source : undefined}
+              sinkNode={editing && module.needsSink ? sink : undefined}
+              canvasCursor={editing && draft.tool === 'add' ? 'copy' : 'default'}
+              linkFrom={editing ? draft.linkFrom : null}
+              onConnect={editing ? draft.connect : undefined}
               fit
-              ariaLabel={`הרצת ${module.shortHe} על הגרף`}
+              ariaLabel={
+                editing ? 'עריכת הגרף' : `הרצת ${module.shortHe} על הגרף`
+              }
             />
           </div>
-          <NodeKey states={keyStates} />
+          {/*
+           * One strip, whichever mode is up: the colour key while running, the
+           * active tool while editing. Same row, same height, so opening the
+           * editor never moves anything on the page.
+           */}
+          {editing ? (
+            <p className="stage-key" aria-live="polite">
+              <span style={{ color: 'var(--accent-strong)', fontWeight: 600 }}>{toolHint}</span>
+              <span className="ms-auto flex-none text-ink-faint">
+                גרור מהנקודה שעל המסגרת כדי לחבר · חצים מזיזים · Delete מוחק · Ctrl+Z מבטל
+              </span>
+            </p>
+          ) : (
+            <NodeKey states={keyStates} />
+          )}
 
           <div className="stage-caption">
+            {editing ? (
+              <>
+                <p aria-live="polite" className="flex items-start gap-2.5">
+                  <span className="event-chip" style={{ background: 'var(--accent-strong)' }}>
+                    עריכה
+                  </span>
+                  <span>{draft.note || selectionLine}</span>
+                </p>
+                <p className="caption-sub text-(length:--step-1) text-ink-faint">
+                  {draftWarning ??
+                    (draft.dirty
+                      ? 'יש שינויים שלא נשמרו. סגירת העורך תבטל אותם.'
+                      : 'הגרף תקין להרצה. השינויים נשמרים רק בלחיצה על שמור.')}
+                </p>
+              </>
+            ) : (
+            <>
             <p aria-live="polite">
               {frame ? (
                 <span key={player.index} className="caption-swap flex items-start gap-2.5">
@@ -292,16 +394,29 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
              * algorithm is only visible to whoever thinks to open it.
              */}
             {activeCode && (
-              <p dir="ltr" className="caption-code num" title="השורה בפסאודו-קוד">
+              <p dir="ltr" className="caption-sub caption-code num" title="השורה בפסאודו-קוד">
                 <span className="caption-code-num">{activeCode.line}</span>
                 <span className="caption-code-text whitespace-pre">{activeCode.text}</span>
               </p>
+            )}
+            </>
             )}
           </div>
         </div>
 
         <aside className="run-aside">
-          {frame ? (
+          {editing ? (
+            <div className="card flex h-full flex-col overflow-hidden p-3">
+              <EditorRail
+                module={module}
+                draft={draft}
+                source={source}
+                sink={sink}
+                onSource={setSource}
+                onSink={setSink}
+              />
+            </div>
+          ) : frame ? (
             <div className="card flex h-full flex-col overflow-hidden p-3">
               <AuxPanel views={frame.aux} hovered={hovered} onHover={setHovered} />
             </div>
@@ -312,7 +427,11 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
       </div>
 
       <div className="run-rail">
-        <TransportRail player={player} frames={frames} flow={graph.flow} />
+        {editing ? (
+          <EditorTools draft={draft} onSave={saveDraft} />
+        ) : (
+          <TransportRail player={player} frames={frames} flow={graph.flow} />
+        )}
       </div>
 
       {/* Depth, spanning the stage so it matches the rail below the graph. */}

@@ -220,38 +220,34 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
        * the viewport, with the rail docked under it. Everything a run needs is
        * on the first screen, at any window height.
        */}
-      <div className="run-stage stage">
-        <div className="stage-canvas">
-          <GraphCanvas
-            graph={graph}
-            frame={frame}
-            hoveredNode={hovered}
-            onHoverNode={setHovered}
-            fit
-            ariaLabel={`הרצת ${module.shortHe} על הגרף`}
-          />
-        </div>
-        <p className="stage-caption" aria-live="polite">
-          {frame ? (
-            <span key={player.index} className="caption-swap flex items-center gap-2.5">
-              <span className="event-chip" style={{ background: EVENT_COLOR[frame.event] }}>
-                {EVENT_LABEL[frame.event]}
+      {/* Graph on the reading side, its data structures beside it on the left. */}
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_330px]">
+        <div className="run-stage stage">
+          <div className="stage-canvas">
+            <GraphCanvas
+              graph={graph}
+              frame={frame}
+              hoveredNode={hovered}
+              onHoverNode={setHovered}
+              fit
+              ariaLabel={`הרצת ${module.shortHe} על הגרף`}
+            />
+          </div>
+          <p className="stage-caption" aria-live="polite">
+            {frame ? (
+              <span key={player.index} className="caption-swap flex items-start gap-2.5">
+                <span className="event-chip" style={{ background: EVENT_COLOR[frame.event] }}>
+                  {EVENT_LABEL[frame.event]}
+                </span>
+                <span>{frame.message}</span>
               </span>
-              <span>{frame.message}</span>
-            </span>
-          ) : (
-            <span className="text-ink-soft">אין צעדים להצגה בגרף הזה.</span>
-          )}
-        </p>
-      </div>
+            ) : (
+              <span className="text-ink-soft">אין צעדים להצגה בגרף הזה.</span>
+            )}
+          </p>
+        </div>
 
-      <div className="run-rail">
-        <TransportRail player={player} frames={frames} flow={graph.flow} />
-      </div>
-
-      {/* Depth. Reached by scrolling on purpose, not scrolled past by accident. */}
-      <div className="grid gap-3 lg:grid-cols-[340px_minmax(0,1fr)]">
-        <div className="min-w-0">
+        <aside className="run-aside">
           {frame ? (
             <div className="card p-3">
               <AuxPanel views={frame.aux} hovered={hovered} onHover={setHovered} />
@@ -259,11 +255,15 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
           ) : (
             <p className="text-ink-soft">אין מבני נתונים להצגה.</p>
           )}
-        </div>
-        <div className="min-w-0">
-          <Pseudocode lines={module.content.pseudocode} activeLine={frame?.codeLine} />
-        </div>
+        </aside>
       </div>
+
+      <div className="run-rail">
+        <TransportRail player={player} frames={frames} flow={graph.flow} />
+      </div>
+
+      {/* Depth. Reached by scrolling on purpose, not scrolled past by accident. */}
+      <Pseudocode lines={module.content.pseudocode} activeLine={frame?.codeLine} />
 
       {module.content.compareHint && onGoToCompare && (
         <div className="card flex flex-wrap items-center gap-3 px-4 py-3">

@@ -360,7 +360,7 @@ export function GraphCanvas({
             y={22}
             fontSize={12}
             fill="var(--ink-soft)"
-            fontFamily="Heebo, sans-serif"
+            fontFamily="'IBM Plex Sans Hebrew', sans-serif"
           >
             min cut
           </text>
@@ -539,7 +539,7 @@ export function GraphCanvas({
               textAnchor="middle"
               fontSize={17}
               fontWeight={700}
-              fontFamily="Heebo, sans-serif"
+              fontFamily="'IBM Plex Sans Hebrew', sans-serif"
               fill="var(--ink)"
             >
               {n.id}

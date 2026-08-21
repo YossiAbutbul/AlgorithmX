@@ -19,8 +19,8 @@
   --color-done: var(--state-done);
   --color-done-fill: var(--state-done-fill);
 
-  --font-display: Rubik, Heebo, system-ui, sans-serif;
-  --font-body: Heebo, system-ui, sans-serif;
+  --font-display: Rubik, 'IBM Plex Sans Hebrew', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans Hebrew', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   --radius-card: var(--radius);
@@ -373,11 +373,7 @@
    * The stage takes whatever the viewport has left after the header and the
    * rail, so graph plus narration plus controls always land on one screen.
    */
-  height: clamp(
-    260px,
-    calc(100vh - var(--header-h) - var(--rail-h) - 152px),
-    780px
-  );
+  height: var(--stage-h);
 
   @media (max-width: 639px) {
     /* On a phone the graph keeps its own aspect instead of letterboxing into a
@@ -387,6 +383,18 @@
     & .stage-canvas {
       aspect-ratio: 2 / 1.15;
     }
+  }
+}
+
+@utility run-aside {
+  /* The data structures sit beside the graph, so a push or a pop is visible at
+     the same moment the graph changes instead of a screen away. */
+  min-width: 0;
+
+  @media (min-width: 1024px) {
+    height: var(--stage-h);
+    overflow-y: auto;
+    scrollbar-width: thin;
   }
 }
 
@@ -473,6 +481,7 @@
 
 @utility event-chip {
   flex: none;
+  margin-block-start: 0.15rem;
   font-size: 0.68rem;
   font-weight: 700;
   padding: 0.18rem 0.5rem;
@@ -705,6 +714,9 @@
   /* Every interactive target clears the touch minimum. */
   --tap: 44px;
 
+  /* What the viewport has left for the graph once the chrome and rail are out. */
+  --stage-h: clamp(260px, calc(100vh - var(--header-h) - var(--rail-h) - 152px), 780px);
+
   --ease-spring: cubic-bezier(0.34, 1.28, 0.42, 1);
   --ease-out: cubic-bezier(0.22, 0.8, 0.3, 1);
 }
@@ -756,7 +768,7 @@
     margin: 0;
     background: var(--bg);
     color: var(--ink);
-    font-family: Heebo, system-ui, sans-serif;
+    font-family: 'IBM Plex Sans Hebrew', system-ui, sans-serif;
     font-size: var(--step-2);
     font-weight: 400;
     line-height: 1.65;
@@ -764,14 +776,15 @@
   }
 
   /*
-   * Rubik carries the headings at 600. Heebo carries everything else across a
-   * real weight range, so hierarchy comes from weight and colour, not size alone.
+   * Rubik carries the headings at 600. IBM Plex Sans Hebrew carries everything
+   * else across a real weight range, so hierarchy comes from weight and colour,
+   * not size alone.
    */
   h1,
   h2,
   h3,
   h4 {
-    font-family: Rubik, Heebo, system-ui, sans-serif;
+    font-family: Rubik, 'IBM Plex Sans Hebrew', system-ui, sans-serif;
     font-weight: 600;
     line-height: 1.25;
     letter-spacing: -0.012em;

@@ -393,8 +393,6 @@
 
   @media (min-width: 1024px) {
     height: var(--stage-h);
-    overflow-y: auto;
-    scrollbar-width: thin;
   }
 }
 

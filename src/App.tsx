@@ -79,7 +79,7 @@ export function App() {
       <ScrollOverlay />
 
       <header ref={headerRef} className="app-header">
-        <div className="mx-auto flex w-full max-w-[1400px] items-center gap-2 px-3 sm:gap-3 sm:px-4 lg:px-6">
+        <div className="flex w-full items-center gap-2 px-3 sm:gap-3 sm:px-4 lg:px-6">
           <div className="flex h-[56px] flex-none items-center sm:h-[60px]">
             <Brand onClick={() => go(ALGORITHMS[0].id)} />
           </div>

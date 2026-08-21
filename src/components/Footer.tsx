@@ -14,11 +14,11 @@ function GithubMark() {
 export function Footer() {
   return (
     <footer className="app-footer">
-      <div className="flex w-full items-center justify-between gap-2 px-4 py-1 sm:py-0.5 text-[12px] leading-none">
+      <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between gap-2 px-4 py-2 text-[12px] leading-none">
         <span className="flex items-baseline gap-2 whitespace-nowrap text-[12px] leading-none">
           <span
             className="tracking-tight"
-            style={{ fontFamily: "'Secular One', sans-serif", direction: 'ltr' }}
+            style={{ fontFamily: 'Rubik, sans-serif', fontWeight: 600, direction: 'ltr' }}
           >
             <span style={{ color: 'var(--ink)' }}>Algorithm</span>
             <span style={{ color: 'var(--accent)' }}>X</span>

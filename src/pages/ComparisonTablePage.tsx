@@ -28,17 +28,17 @@ export function ComparisonTablePage({ onNavigate }: { onNavigate: (id: string) =
 
   return (
     <div className="flex flex-col gap-4">
-      <header>
-        <h1 className="text-[length:var(--step-5)]">הכל במקום אחד</h1>
+      <header className="prose">
+        <h1 style={{ fontSize: 'var(--step-5)' }}>הכל במקום אחד</h1>
         <p className="text-ink-soft">
           תשעת האלגוריתמים בשורה אחת כל אחד. לחיצה על כותרת עמודה ממיינת, ולחיצה על שורה פותחת את
           הטאב המתאים.
         </p>
       </header>
 
-      <div className="card hidden overflow-hidden p-0 md:block">
+      <div className="card hidden overflow-hidden p-0 lg:block">
         <div className="scroll-x">
-          <table className="w-full border-collapse text-[length:var(--step-2)]">
+          <table className="w-full border-collapse text-(length:--step-2)">
             <thead>
               <tr>
                 {COMPARISON_COLUMNS.map((c) => (
@@ -75,7 +75,7 @@ export function ComparisonTablePage({ onNavigate }: { onNavigate: (id: string) =
                   key={r.id}
                   tabIndex={0}
                   role="link"
-                  className="cursor-pointer hover:bg-[var(--accent-soft)] focus:bg-[var(--accent-soft)]"
+                  className="cursor-pointer hover:bg-(--accent-soft) focus:bg-(--accent-soft)"
                   onClick={() => onNavigate(r.id)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -102,19 +102,19 @@ export function ComparisonTablePage({ onNavigate }: { onNavigate: (id: string) =
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 md:hidden">
+      <div className="grid gap-3 sm:grid-cols-2 lg:hidden">
         {rows.map((r) => (
           <button
             key={r.id}
             className="card p-3 text-start"
             onClick={() => onNavigate(r.id)}
           >
-            <h2 className="num mb-1 flex items-center gap-1 text-[length:var(--step-4)]">
-              {r.name}
+            <h2 className="num mb-1 flex items-center gap-1">
+              <span style={{ fontSize: 'var(--step-4)' }}>{r.name}</span>
               <ChevronLeft size={18} aria-hidden="true" style={{ color: 'var(--accent)' }} />
             </h2>
             <p className="mb-2">{r.solves}</p>
-            <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-[length:var(--step-1)]">
+            <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-(length:--step-1)">
               {COMPARISON_COLUMNS.filter((c) => c.key !== 'name' && c.key !== 'solves').map((c) => (
                 <div key={c.key} className="flex gap-1">
                   <dt className="text-ink-soft">{c.label}:</dt>

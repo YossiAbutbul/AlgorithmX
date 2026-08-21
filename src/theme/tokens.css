@@ -1,16 +1,677 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sunken: var(--surface-sunken);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-strong: var(--accent-strong);
+  --color-ink-faint: var(--ink-faint);
+  --color-line-soft: var(--line-soft);
+  --color-frontier: var(--state-frontier);
+  --color-frontier-fill: var(--state-frontier-fill);
+  --color-current: var(--state-current);
+  --color-current-fill: var(--state-current-fill);
+  --color-done: var(--state-done);
+  --color-done-fill: var(--state-done-fill);
+
+  --font-display: Rubik, Heebo, system-ui, sans-serif;
+  --font-body: Heebo, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius-card: var(--radius);
+
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+
+@utility card-quiet {
+  /* A quiet block inside a card: no border, just a tint and space. */
+  background: var(--surface-sunken);
+  border-radius: var(--radius-sm);
+}
+
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 0 0.85rem;
+  min-height: var(--tap);
+  min-width: var(--tap);
+  font-size: var(--step-2);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.12s var(--ease-spring);
+
+  &:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+}
+
+@utility btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 8px 18px -10px rgba(91, 63, 209, 0.9);
+
+  &:hover:not(:disabled) {
+    background: var(--accent-strong);
+    border-color: var(--accent-strong);
+    color: #fff;
+  }
+}
+
+@utility btn-sm {
+  /* Compact button for dense rows, still a legal tap target on touch. */
+  min-height: 36px;
+  min-width: 36px;
+  padding: 0 0.7rem;
+  font-size: var(--step-1);
+
+  @media (pointer: coarse), (max-width: 639px) {
+    min-height: var(--tap);
+    min-width: var(--tap);
+  }
+}
+
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 0 0.8rem;
+  min-height: 36px;
+  font-size: var(--step-1);
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.12s var(--ease-spring);
+
+  &:hover {
+    color: var(--ink);
+    border-color: var(--state-idle-line);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  @media (pointer: coarse), (max-width: 639px) {
+    min-height: var(--tap);
+  }
+
+  &[aria-pressed='true'] {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  &[data-active='true'] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  &[data-active='true']:hover {
+    background: var(--accent-strong);
+    border-color: var(--accent-strong);
+    color: #fff;
+  }
+}
+
+@utility app-header {
+  /* One fixed bar. The section tabs and the switcher share it. */
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  z-index: 40;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+@utility switcher-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+  min-height: 40px;
+  padding: 0 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface-sunken);
+  font-size: var(--step-2);
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  &[aria-expanded='true'] {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  & .caret {
+    transition: transform 0.25s var(--ease-spring);
+  }
+
+  &[aria-expanded='true'] .caret {
+    transform: rotate(180deg);
+  }
+
+  @media (max-width: 639px) {
+    min-height: var(--tap);
+  }
+}
+
+@utility caret {
+  .switcher-btn & {
+    transition: transform 0.25s var(--ease-spring);
+  }
+
+  .switcher-btn[aria-expanded='true'] & {
+    transform: rotate(180deg);
+  }
+}
+
+@utility switcher-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline-start: 0;
+  z-index: 50;
+  width: min(620px, calc(100vw - 24px));
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  transform-origin: top var(--pop-origin, right);
+  animation: popIn 0.22s var(--ease-spring) both;
+
+  @media (max-width: 639px) {
+    grid-template-columns: 1fr;
+    max-height: 62vh;
+    overflow-y: auto;
+  }
+}
+
+@utility switcher-item {
+  width: 100%;
+  text-align: start;
+  border: 0;
+  background: none;
+  border-radius: 8px;
+  padding: 0.4rem 0.55rem;
+  min-height: 40px;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.14s ease;
+
+  &:hover {
+    background: var(--surface-sunken);
+  }
+
+  &[aria-current='true'] {
+    background: var(--accent-soft);
+  }
+
+  @media (max-width: 639px) {
+    min-height: var(--tap);
+  }
+}
+
+@utility section-tab {
+  position: relative;
+  flex: none;
+  min-height: 40px;
+  padding: 0 0.7rem;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-size: var(--step-2);
+  font-weight: 500;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover:not([aria-selected='true']) {
+    background: var(--surface-sunken);
+    color: var(--ink);
+  }
+
+  &[aria-selected='true'] {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  @media (max-width: 639px) {
+    min-height: var(--tap);
+  }
+}
+
+@utility icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+
+  @media (max-width: 639px) {
+    width: var(--tap);
+    height: var(--tap);
+  }
+
+  &:hover {
+    background: var(--surface-sunken);
+    color: var(--accent);
+    border-color: var(--line);
+  }
+
+  &[aria-pressed='true'] {
+    background: var(--surface-sunken);
+    color: var(--accent);
+    border-color: var(--line);
+  }
+}
+
+@utility stage {
+  /* The stage: the graph, sized to what is left of the viewport. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  min-height: 240px;
+}
+
+@utility run-stage {
+  /*
+   * The stage takes whatever the viewport has left after the header and the
+   * rail, so graph plus narration plus controls always land on one screen.
+   */
+  height: clamp(
+    260px,
+    calc(100vh - var(--header-h) - var(--rail-h) - 152px),
+    780px
+  );
+
+  @media (max-width: 639px) {
+    /* On a phone the graph keeps its own aspect instead of letterboxing into a
+       tall column, and the freed height goes to the data structures. */
+    height: auto;
+
+    & .stage-canvas {
+      aspect-ratio: 2 / 1.15;
+    }
+  }
+}
+
+@utility run-rail {
+  /* The rail follows you down into the data structures. */
+  position: sticky;
+  bottom: 10px;
+  z-index: 20;
+
+  @media (max-width: 639px) {
+    bottom: 0;
+    margin-inline: -0.75rem;
+
+    & .rail {
+      border-radius: 0;
+      border-inline: 0;
+      border-bottom: 0;
+    }
+  }
+}
+
+@utility stage-canvas {
+  @media (max-width: 639px) {
+    .run-stage & {
+      aspect-ratio: 2 / 1.15;
+    }
+  }
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 6px;
+
+  & svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+@utility rail {
+  @media (max-width: 639px) {
+    .run-rail & {
+      border-radius: 0;
+      border-inline: 0;
+      border-bottom: 0;
+    }
+  }
+
+  /* The rail: transport plus scrubber, docked under the stage. */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+
+  /* Scrubber on its own row, the six controls on the next, nothing past that. */
+  @media (max-width: 639px) {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+    gap: 0.35rem;
+    padding: 0.5rem;
+
+    & .num {
+      padding: 0;
+      font-size: 0.78rem;
+    }
+  }
+}
+
+@utility stage-caption {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 52px;
+  padding: 0.55rem 0.9rem;
+  border-top: 1px solid var(--line-soft);
+  background: var(--surface-sunken);
+  font-size: var(--step-3);
+  line-height: 1.4;
+}
+
+@utility event-chip {
+  flex: none;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+@utility scrubber {
+  flex: 1 1 auto;
+  min-width: 60px;
+  height: var(--tap);
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0.55rem 0.4rem;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  touch-action: none;
+
+  @media (max-width: 639px) {
+    flex: 1 0 100%;
+    order: -1;
+    height: 40px;
+  }
+}
+
+@utility scrubber-mark {
+  flex: 1 1 0;
+  min-width: 2px;
+  border-radius: 2px;
+  transition:
+    height 0.2s var(--ease-out),
+    opacity 0.15s ease;
+
+  &[data-active='true'] {
+    border-radius: 3px;
+    box-shadow:
+      0 0 0 2px var(--surface),
+      0 0 0 3.5px var(--accent);
+  }
+}
+
+@utility popover {
+  position: absolute;
+  z-index: 50;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  padding: 0.8rem 0.9rem;
+  animation: popIn 0.2s var(--ease-spring) both;
+}
+
+@utility scroll-overlay {
+  /* The page scrollbar is hidden, so a thin one floats over the content. */
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  z-index: 60;
+  pointer-events: none;
+
+  @media (max-width: 639px) {
+    /* Touch devices bring their own overlay scrollbar. */
+    display: none;
+  }
+}
+
+@utility scroll-overlay-thumb {
+  position: absolute;
+  right: 3px;
+  width: 4px;
+  border-radius: 999px;
+  background: #b3bcdd;
+  pointer-events: auto;
+  cursor: grab;
+  transition:
+    width 0.15s ease,
+    right 0.15s ease,
+    background-color 0.15s ease;
+
+  &:hover {
+    width: 7px;
+    right: 2px;
+    background: #7f8bb8;
+  }
+
+  &[data-dragging='true'] {
+    width: 7px;
+    right: 2px;
+    background: #7f8bb8;
+  }
+
+  &[data-dragging='true'] {
+    cursor: grabbing;
+  }
+}
+
+@utility app-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+
+@utility footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-radius: 6px;
+  padding: 0.35rem 0.4rem;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+
+  &:hover {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+}
+
+@utility info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  cursor: help;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--accent);
+  }
+
+  &[aria-expanded='true'] {
+    color: var(--accent);
+  }
+}
+
+@utility tooltip-pop {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  inset-inline-start: 0;
+  z-index: 50;
+  width: max-content;
+  max-width: 280px;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-pop);
+  animation: popIn 0.18s var(--ease-spring) both;
+}
+
+@utility meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 0.2rem 0.55rem;
+  font-size: var(--step-1);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+@utility hairline {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 1.25rem 0;
+}
+
+@utility prose {
+  /* Prose never runs wider than a comfortable measure. */
+  max-width: 68ch;
+}
+
 
 :root {
-  --bg: #f1f4fd;
+  --bg: #eef1fb;
   --surface: #ffffff;
-  --surface-sunken: #f7f9fe;
-  --ink: #1a2144;
-  --ink-soft: #5c6690;
-  --line: #dce2f6;
+  --surface-sunken: #f5f7fe;
+  --ink: #171d3e;
+  --ink-soft: #5b6595;
+  --ink-faint: #8990b6;
+  --line: #e0e5f6;
+  --line-soft: #edf0fa;
   --accent: #5b3fd1;
-  --accent-soft: #ede9fd;
+  --accent-strong: #4b32b6;
+  --accent-soft: #ece8fd;
 
   --state-frontier: #d98a08;
   --state-frontier-fill: #fff2d6;
@@ -18,10 +679,18 @@
   --state-current-fill: #ffe2e7;
   --state-done: #0e9a86;
   --state-done-fill: #d5f4ee;
-  --state-idle-line: #bfc8e8;
+  --state-idle-line: #c2cbe9;
 
-  --radius: 16px;
-  --shadow-card: 0 2px 0 var(--line), 0 12px 28px -20px rgba(40, 30, 110, 0.55);
+  --radius: 14px;
+  --radius-sm: 10px;
+
+  /*
+ * Two elevations only. Everything inside a card separates with a hairline and
+ * space, never with another border, so the graph is the one raised surface.
+ */
+  --shadow-card:
+    0 1px 2px rgba(23, 29, 62, 0.04), 0 18px 36px -30px rgba(23, 29, 62, 0.5);
+  --shadow-pop: 0 24px 60px -28px rgba(23, 29, 62, 0.55);
 
   --step-1: 0.8125rem;
   --step-2: 0.9375rem;
@@ -29,35 +698,31 @@
   --step-4: 1.375rem;
   --step-5: 1.875rem;
 
-  --header-h: 109px;
-  --subbar-h: 50px;
+  /* One bar, measured live in App. The rail is docked under the stage. */
+  --header-h: 60px;
+  --rail-h: 62px;
+
+  /* Every interactive target clears the touch minimum. */
+  --tap: 44px;
+
+  --ease-spring: cubic-bezier(0.34, 1.28, 0.42, 1);
+  --ease-out: cubic-bezier(0.22, 0.8, 0.3, 1);
 }
 
-@media (min-width: 640px) {
-  :root {
-    --header-h: 69px;
-  }
-}
-
-/* The same five size scale, tightened slightly for narrow screens */
 @media (max-width: 639px) {
   :root {
     --step-4: 1.2rem;
     --step-5: 1.5rem;
+    --header-h: 56px;
+    --rail-h: 108px;
   }
 }
 
 @layer base {
   html {
     background: var(--bg);
-    /*
-     * The page scrollbar is hidden entirely and replaced by a thin bar over the content.
-     * That lets the header and footer span the full width, with no layout jump when
-     * moving between a page that scrolls and one that does not.
-     */
     scrollbar-width: none;
-    /* Anchor scrolling will not hide content behind the two fixed bars */
-    scroll-padding-top: calc(var(--header-h) + var(--subbar-h) + 8px);
+    scroll-padding-top: calc(var(--header-h) + 8px);
   }
 
   html::-webkit-scrollbar {
@@ -91,20 +756,27 @@
     margin: 0;
     background: var(--bg);
     color: var(--ink);
-    font-family: 'Assistant', system-ui, sans-serif;
+    font-family: Heebo, system-ui, sans-serif;
     font-size: var(--step-2);
+    font-weight: 400;
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
   }
 
+  /*
+   * Rubik carries the headings at 600. Heebo carries everything else across a
+   * real weight range, so hierarchy comes from weight and colour, not size alone.
+   */
   h1,
   h2,
   h3,
   h4 {
-    font-family: 'Secular One', system-ui, sans-serif;
-    font-weight: 400;
-    line-height: 1.3;
+    font-family: Rubik, Heebo, system-ui, sans-serif;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.012em;
     margin: 0;
+    text-wrap: balance;
   }
 
   code,
@@ -133,404 +805,43 @@
   }
 }
 
-@layer components {
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-card);
-  }
-
-  .card-quiet {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    color: var(--ink);
-    border-radius: 10px;
-    padding: 0.4rem 0.85rem;
-    min-height: 36px;
-    font-size: var(--step-2);
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-  }
-
-  .btn:hover:not(:disabled) {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .btn:disabled {
-    opacity: 0.42;
-    cursor: not-allowed;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #4b32b6;
-    border-color: #4b32b6;
-    color: #fff;
-  }
-
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    border-radius: 999px;
-    padding: 0.3rem 0.8rem;
-    min-height: 32px;
-    font-size: var(--step-1);
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  .chip[aria-pressed='true'] {
-    background: var(--accent-soft);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .chip[data-active='true'] {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-
-  .chip[data-active='true']:hover {
-    background: #4b32b6;
-    border-color: #4b32b6;
-    color: #fff;
-  }
-
-  /* Main navigation: one track with a pill that slides to the active tab */
-  .nav-track {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 1px;
-    padding: 4px;
-    /* Clears the fade at the scrolling end so the active pill is never dimmed */
-    padding-inline-end: 16px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: var(--surface-sunken);
-  }
-
-  .nav-pill {
-    position: absolute;
-    top: 4px;
-    bottom: 4px;
-    left: 0;
-    border-radius: 999px;
-    background: var(--accent);
-    box-shadow: 0 8px 16px -10px rgba(91, 63, 209, 0.95);
-    pointer-events: none;
-    transition:
-      transform 0.36s cubic-bezier(0.34, 1.15, 0.42, 1),
-      width 0.36s cubic-bezier(0.34, 1.15, 0.42, 1),
-      opacity 0.2s ease;
-  }
-
-  .nav-tab {
-    position: relative;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    white-space: nowrap;
-    border: 0;
-    border-radius: 999px;
-    background: transparent;
-    min-height: 34px;
-    padding: 0.42rem 0.62rem;
-    font-size: var(--step-2);
-    font-weight: 600;
-    color: var(--ink-soft);
-    cursor: pointer;
-    transition: color 0.2s ease;
-  }
-
-  .nav-tab:hover:not([data-active='true']) {
-    color: var(--ink);
-  }
-
-  .nav-tab[data-active='true'] {
-    color: #fff;
-  }
-
-  /* Both bars are fixed in place, so they never move while scrolling */
-  .app-header {
-    position: fixed;
-    top: 0;
-    inset-inline: 0;
-    z-index: 40;
-    background: var(--surface);
-    border-bottom: 1px solid var(--line);
-  }
-
-  .scroll-overlay {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    width: 12px;
-    z-index: 60;
-    pointer-events: none;
-  }
-
-  .scroll-overlay-thumb {
-    position: absolute;
-    right: 3px;
-    width: 4px;
-    border-radius: 999px;
-    background: #b3bcdd;
-    pointer-events: auto;
-    cursor: grab;
-    transition: width 0.15s ease, left 0.15s ease, background-color 0.15s ease;
-  }
-
-  .scroll-overlay-thumb:hover,
-  .scroll-overlay-thumb[data-dragging='true'] {
-    width: 7px;
-    right: 2px;
-    background: #7f8bb8;
-  }
-
-  .scroll-overlay-thumb[data-dragging='true'] {
-    cursor: grabbing;
-  }
-
-  .app-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 35;
-    background: var(--surface);
-    border-top: 1px solid var(--line);
-  }
-
-  .footer-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 12px;
-    line-height: 1;
-    color: var(--ink-soft);
-    text-decoration: none;
-    border-radius: 6px;
-    padding: 0.15rem 0.2rem;
-    transition: color 0.15s ease, background-color 0.15s ease;
-  }
-
-  .footer-link:hover {
-    color: var(--accent);
-    background: var(--accent-soft);
-  }
-
-  .subtab-bar {
-    position: fixed;
-    inset-inline: 0;
-    /* One pixel of overlap under the header so no seam opens for content to show through */
-    top: calc(var(--header-h) - 1px);
-    z-index: 30;
-    background: var(--surface-sunken);
-    border-bottom: 1px solid var(--line);
-  }
-
-  .subtab {
-    position: relative;
-    display: inline-flex;
-    flex: 1 1 0;
-    min-width: max-content;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    white-space: nowrap;
-    border: 0;
-    padding: 0.75rem 0.9rem;
-    font-size: var(--step-2);
-    font-weight: 600;
-    color: var(--ink-soft);
-    background: transparent;
-    cursor: pointer;
-    transition: color 0.15s ease;
-  }
-
-  .subtab::after {
-    content: '';
-    position: absolute;
-    inset-inline: 0.7rem;
-    bottom: 0;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
-    background: transparent;
-    transition: background-color 0.15s ease;
-  }
-
-  .subtab:hover:not([aria-selected='true']) {
-    color: var(--ink);
-  }
-
-  .subtab:hover:not([aria-selected='true'])::after {
-    background: var(--line);
-  }
-
-  .subtab[aria-selected='true'] {
-    color: var(--accent);
-    font-weight: 700;
-  }
-
-  /* One indicator that slides to the active tab, instead of one per tab */
-  .subtab-indicator {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
-    background: var(--accent);
-    pointer-events: none;
-    transition:
-      transform 0.34s cubic-bezier(0.34, 1.2, 0.42, 1),
-      width 0.34s cubic-bezier(0.34, 1.2, 0.42, 1),
-      opacity 0.2s ease;
-  }
-
-  .subtab-index {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    flex: none;
-    border-radius: 6px;
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
-    font-size: var(--step-1);
-    background: var(--surface);
-    border: 1px solid var(--line);
-    color: var(--ink-soft);
-  }
-
-  .subtab[aria-selected='true'] .subtab-index {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-
-  @media (max-width: 639px) {
-    /* Touch devices bring their own overlay scrollbar, so the custom one is dropped */
-    .scroll-overlay {
-      display: none;
-    }
-
-    /* Only the icon remains in the narrow footer, so the link needs a real tap target */
-    .footer-link {
-      min-height: 36px;
-      padding-inline: 0.8rem;
-    }
-
-    .footer-link svg {
-      width: 16px;
-      height: 16px;
-    }
-
-    .subtab {
-      gap: 0.35rem;
-      padding: 0.7rem 0.45rem;
-      font-size: var(--step-1);
-    }
-
-    .subtab-index {
-      width: 1.1rem;
-      height: 1.1rem;
-    }
-
-    .nav-tab {
-      padding: 0.42rem 0.6rem;
-    }
-  }
-
-  .info-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--ink-soft);
-    cursor: help;
-    transition: color 0.15s ease;
-  }
-
-  .info-btn:hover,
-  .info-btn[aria-expanded='true'] {
-    color: var(--accent);
-  }
-
-  .tooltip-pop {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    inset-inline-start: 0;
-    z-index: 50;
-    width: max-content;
-    max-width: 280px;
-    padding: 0.75rem;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    box-shadow: 0 16px 32px -20px rgba(40, 30, 110, 0.7);
-  }
-
-  .meta-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    border-radius: 8px;
-    padding: 0.2rem 0.55rem;
-    font-size: var(--step-1);
-    color: var(--ink-soft);
-    white-space: nowrap;
-  }
-
-  .nav-divider {
-    display: inline-block;
-    width: 1px;
-    height: 20px;
-    flex: none;
-    background: var(--line);
-    margin-inline: 0.3rem;
-  }
-
-  .hairline {
-    border: 0;
-    border-top: 1px solid var(--line);
-    margin: 1.25rem 0;
-  }
-}
+/* Motion. Every one of these is disabled under prefers-reduced-motion below. */
 
 .panel-in {
-  animation: panelIn 0.28s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+  animation: panelIn 0.3s var(--ease-out) both;
 }
 
 @keyframes panelIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The narration swaps in from the reading direction on every step. */
+.caption-swap {
+  animation: captionSwap 0.26s var(--ease-out) both;
+}
+
+@keyframes captionSwap {
+  from {
+    opacity: 0;
+    transform: translateX(6px);
   }
   to {
     opacity: 1;
@@ -548,6 +859,80 @@
   }
   100% {
     background-color: transparent;
+  }
+}
+
+/* A value that just changed lands with a small pop. */
+.pop-in {
+  animation: valuePop 0.34s var(--ease-spring) both;
+}
+
+@keyframes valuePop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The node being handled right now breathes, so the eye finds it instantly. */
+@keyframes nodePulse {
+  0%,
+  100% {
+    r: var(--pulse-min);
+    opacity: 0.85;
+  }
+  50% {
+    r: var(--pulse-max);
+    opacity: 0.25;
+  }
+}
+
+.node-pulse {
+  animation: nodePulse 1.6s ease-in-out infinite;
+}
+
+/* Edges under consideration flow toward the node they are testing. */
+@keyframes dashFlow {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+
+.edge-flow {
+  animation: dashFlow 0.9s linear infinite;
+}
+
+/* A newly chosen tree edge draws itself from the parent outward. */
+@keyframes edgeDraw {
+  from {
+    stroke-dashoffset: var(--draw-len);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.edge-draw {
+  animation: edgeDraw 0.42s var(--ease-out) both;
+}
+
+/* Items entering a queue, stack or set slide in from the tail. */
+.item-in {
+  animation: itemIn 0.28s var(--ease-spring) both;
+}
+
+@keyframes itemIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -576,6 +961,12 @@
   display: none;
   width: 0;
   height: 0;
+}
+
+/* A row that scrolls sideways fades at its end so the overflow is visible. */
+.fade-end {
+  -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 14px), transparent);
+  mask-image: linear-gradient(to left, #000 calc(100% - 14px), transparent);
 }
 
 .sr-only {

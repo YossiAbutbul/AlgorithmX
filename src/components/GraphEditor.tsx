@@ -81,8 +81,8 @@ export function GraphEditor({ module, graph, onSave, onReset }: Props) {
   return (
     <div className="card-quiet flex flex-col gap-3 p-3">
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-[length:var(--step-3)]">עורך הגרף</h3>
-        <p className="text-[length:var(--step-1)] text-ink-soft">
+        <h3 className="text-(length:--step-3)">עורך הגרף</h3>
+        <p className="text-(length:--step-1) text-ink-soft">
           לחיצה על שטח ריק מוסיפה צומת, גרירה מזיזה אותו, ולחיצה על שני צמתים בוחרת אותם לצלע.
           הכיווניות נקבעת לפי האלגוריתם: {module.graphKind.directed ? 'גרף מכוון' : 'גרף לא מכוון'}.
         </p>
@@ -106,11 +106,11 @@ export function GraphEditor({ module, graph, onSave, onReset }: Props) {
       </div>
 
       <div className="flex flex-wrap items-end gap-2">
-        <span className="text-[length:var(--step-2)]">
+        <span className="text-(length:--step-2)">
           נבחרו: <b className="num">{selected.join(' , ') || 'אף אחד'}</b>
         </span>
         {weighted && (
-          <label className="flex items-center gap-1.5 text-[length:var(--step-2)]">
+          <label className="flex items-center gap-1.5 text-(length:--step-2)">
             <span className="text-ink-soft">{weightLabel}</span>
             <input
               className="btn w-24"
@@ -136,13 +136,13 @@ export function GraphEditor({ module, graph, onSave, onReset }: Props) {
 
       {draft.edges.length > 0 && (
         <div className="scroll-x">
-          <table className="w-full border-collapse text-[length:var(--step-2)]">
+          <table className="w-full border-collapse text-(length:--step-2)">
             <thead>
               <tr>
                 {['צלע', weightLabel, ''].map((c, i) => (
                   <th
                     key={i}
-                    className="border-b border-line px-2 py-1 text-start text-[length:var(--step-1)] text-ink-soft"
+                    className="border-b border-line px-2 py-1 text-start text-(length:--step-1) text-ink-soft"
                   >
                     {c}
                   </th>
@@ -220,7 +220,7 @@ export function GraphEditor({ module, graph, onSave, onReset }: Props) {
       </div>
 
       <textarea
-        className="num h-24 w-full rounded-lg border border-line bg-sunken p-2 text-[length:var(--step-1)]"
+        className="num h-24 w-full rounded-lg border border-line bg-sunken p-2 text-(length:--step-1)"
         dir="ltr"
         placeholder='{"nodes":[...],"edges":[...]}'
         value={io}
@@ -228,7 +228,7 @@ export function GraphEditor({ module, graph, onSave, onReset }: Props) {
       />
 
       {msg && (
-        <p aria-live="polite" className="text-[length:var(--step-1)] text-ink-soft">
+        <p aria-live="polite" className="text-(length:--step-1) text-ink-soft">
           {msg}
         </p>
       )}

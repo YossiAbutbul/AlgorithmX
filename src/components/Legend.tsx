@@ -1,6 +1,10 @@
+import type { Frame } from '../algorithms/types';
+import { EVENT_COLOR, EVENT_LABEL } from './events';
+
 interface LegendProps {
   flow?: boolean;
-  weighted?: boolean;
+  /** When given, the legend also explains the colours used on the scrubber. */
+  frames?: Frame[];
 }
 
 const NODE_ITEMS = [
@@ -53,15 +57,7 @@ function NodeSwatch({ fill, stroke, glyph }: { fill: string; stroke: string; gly
   );
 }
 
-function EdgeSwatch({
-  stroke,
-  width,
-  dash,
-}: {
-  stroke: string;
-  width: number;
-  dash?: string;
-}) {
+function EdgeSwatch({ stroke, width, dash }: { stroke: string; width: number; dash?: string }) {
   return (
     <svg width="34" height="14" viewBox="0 0 34 14" aria-hidden="true">
       <line
@@ -78,7 +74,25 @@ function EdgeSwatch({
   );
 }
 
-export function Legend({ flow = false }: LegendProps) {
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <h3
+        className="font-body text-ink-faint"
+        style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}
+      >
+        {title}
+      </h3>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">{children}</div>
+    </div>
+  );
+}
+
+/**
+ * Opened from the rail, not pinned open under the graph. Reference material
+ * should be one click away, not competing with the run for attention.
+ */
+export function Legend({ flow = false, frames }: LegendProps) {
   const edgeItems = [
     { label: 'לא נבדקה', stroke: 'var(--state-idle-line)', width: 2 },
     { label: 'נבדקת עכשיו', stroke: 'var(--state-current)', width: 3, dash: '6 5' },
@@ -89,28 +103,41 @@ export function Legend({ flow = false }: LegendProps) {
     edgeItems.push({ label: 'שאריתית', stroke: 'var(--state-frontier)', width: 3, dash: '7 5' });
   }
 
+  const events = frames ? Array.from(new Set(frames.map((f) => f.event))) : [];
+
   return (
-    <div className="card-quiet bg-sunken px-4 py-3">
-      <div className="flex flex-wrap gap-x-6 gap-y-2">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          <span className="text-[length:var(--step-1)] font-bold text-ink-soft">צמתים</span>
-          {NODE_ITEMS.map((item) => (
-            <span key={item.label} className="flex items-center gap-1.5 text-[length:var(--step-1)]">
-              <NodeSwatch fill={item.fill} stroke={item.stroke} glyph={item.glyph} />
-              {item.label}
+    <div className="flex flex-col gap-3" style={{ fontSize: 'var(--step-1)' }}>
+      <Group title="צמתים">
+        {NODE_ITEMS.map((item) => (
+          <span key={item.label} className="flex items-center gap-1.5">
+            <NodeSwatch fill={item.fill} stroke={item.stroke} glyph={item.glyph} />
+            {item.label}
+          </span>
+        ))}
+      </Group>
+
+      <Group title="צלעות">
+        {edgeItems.map((item) => (
+          <span key={item.label} className="flex items-center gap-1.5">
+            <EdgeSwatch stroke={item.stroke} width={item.width} dash={item.dash} />
+            {item.label}
+          </span>
+        ))}
+      </Group>
+
+      {events.length > 0 && (
+        <Group title="צבעי ציר הצעדים">
+          {events.map((ev) => (
+            <span key={ev} className="flex items-center gap-1.5">
+              <span
+                className="inline-block h-3 w-3 rounded-xs"
+                style={{ background: EVENT_COLOR[ev] }}
+              />
+              {EVENT_LABEL[ev]}
             </span>
           ))}
-        </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          <span className="text-[length:var(--step-1)] font-bold text-ink-soft">צלעות</span>
-          {edgeItems.map((item) => (
-            <span key={item.label} className="flex items-center gap-1.5 text-[length:var(--step-1)]">
-              <EdgeSwatch stroke={item.stroke} width={item.width} dash={item.dash} />
-              {item.label}
-            </span>
-          ))}
-        </div>
-      </div>
+        </Group>
+      )}
     </div>
   );
 }

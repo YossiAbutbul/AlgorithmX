@@ -26,14 +26,14 @@ export function EdgeListView({ view }: { view: E }) {
   return (
     <div>
       <div className="scroll-x">
-        <table className="w-full border-collapse text-[length:var(--step-2)]">
+        <table className="w-full border-collapse text-(length:--step-2)">
           <thead>
             <tr>
               {['', 'צלע', 'משקל', 'מצב'].map((c, i) => (
                 <th
                   key={i}
                   scope="col"
-                  className="border-b border-line px-2 py-1 text-start text-[length:var(--step-1)] font-semibold text-ink-soft"
+                  className="border-b border-line px-2 py-1 text-start text-(length:--step-1) font-semibold text-ink-soft"
                 >
                   {c}
                 </th>
@@ -53,7 +53,7 @@ export function EdgeListView({ view }: { view: E }) {
                   <td className="num border-b border-line px-2 py-1 font-semibold">{r.label}</td>
                   <td className="num border-b border-line px-2 py-1">{r.weight}</td>
                   <td
-                    className="border-b border-line px-2 py-1 text-[length:var(--step-1)]"
+                    className="border-b border-line px-2 py-1 text-(length:--step-1)"
                     style={{ color: s.color }}
                   >
                     {s.label}
@@ -64,7 +64,7 @@ export function EdgeListView({ view }: { view: E }) {
           </tbody>
         </table>
       </div>
-      {view.note && <p className="mt-1 text-[length:var(--step-1)] text-ink-soft">{view.note}</p>}
+      {view.note && <p className="mt-1 text-(length:--step-1) text-ink-soft">{view.note}</p>}
     </div>
   );
 }

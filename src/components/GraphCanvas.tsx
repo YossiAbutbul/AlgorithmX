@@ -170,6 +170,87 @@ export function GraphCanvas({
     return set;
   }, [graph]);
 
+  /** Edge paths, shared by the renderer and by the badge placement below. */
+  const edgeGeo = useMemo(() => {
+    const m = new Map<string, Geometry>();
+    for (const e of graph.edges) {
+      const a = pos.get(e.from);
+      const b = pos.get(e.to);
+      if (!a || !b) continue;
+      const bend = antiParallel.has(e.id) ? 34 : 0;
+      m.set(
+        e.id,
+        bend
+          ? curvedGeometry(a.x, a.y, b.x, b.y, bend, graph.directed)
+          : straightGeometry(a.x, a.y, b.x, b.y, graph.directed),
+      );
+    }
+    return m;
+  }, [graph, pos, antiParallel]);
+
+  /**
+   * A distance label pinned under the node collides with any edge that leaves
+   * downward. Place it in the widest gap between this node's own edges, then
+   * prefer whichever of those gaps sits furthest from the weight labels and the
+   * other nodes, so it does not simply land on top of something else.
+   */
+  const badgeSpot = useMemo(() => {
+    const spot = new Map<NodeId, { x: number; y: number; ux: number; uy: number }>();
+    const DIST = R + 15;
+    const inFrame = (x: number, y: number) =>
+      x > 22 && x < graph.width - 22 && y > 14 && y < graph.height - 8;
+
+    const obstacles = [
+      ...[...edgeGeo.values()].map((g) => ({ x: g.midX, y: g.midY })),
+      ...graph.nodes.map((o) => ({ x: o.x, y: o.y })),
+    ];
+
+    for (const n of graph.nodes) {
+      const angles: number[] = [];
+      for (const e of graph.edges) {
+        const other =
+          e.from === n.id ? pos.get(e.to) : e.to === n.id ? pos.get(e.from) : undefined;
+        if (other) angles.push(Math.atan2(other.y - n.y, other.x - n.x));
+      }
+
+      // Directly below reads best when nothing is in the way
+      let best = Math.PI / 2;
+      if (angles.length > 0) {
+        angles.sort((a, b) => a - b);
+        const gaps = angles.map((a, i) => {
+          const next = i === angles.length - 1 ? angles[0] + Math.PI * 2 : angles[i + 1];
+          return { angle: (a + next) / 2, gap: next - a };
+        });
+
+        const scored = gaps.map((g) => {
+          const x = n.x + Math.cos(g.angle) * DIST;
+          const y = n.y + Math.sin(g.angle) * DIST;
+          let clearance = Infinity;
+          for (const o of obstacles) {
+            const d = Math.hypot(o.x - x, o.y - y);
+            // The node's own centre is always DIST away, so it is not an obstacle
+            if (d > 1 && d < clearance) clearance = d;
+          }
+          return { ...g, x, y, clearance, fits: inFrame(x, y) };
+        });
+
+        scored.sort((a, c) => {
+          if (a.fits !== c.fits) return a.fits ? -1 : 1;
+          // Anything past 34 units is clear enough, so the wider gap decides
+          const ca = Math.min(a.clearance, 34);
+          const cc = Math.min(c.clearance, 34);
+          return cc - ca || c.gap - a.gap;
+        });
+        best = scored[0].angle;
+      }
+
+      const ux = Math.cos(best);
+      const uy = Math.sin(best);
+      spot.set(n.id, { x: n.x + ux * DIST, y: n.y + uy * DIST, ux, uy });
+    }
+    return spot;
+  }, [graph, pos, edgeGeo]);
+
   const edgeState = (e: GraphEdge): EdgeState => frame?.edgeStates[e.id] ?? 'idle';
   const nodeState = (id: NodeId): NodeState => frame?.nodeStates[id] ?? 'idle';
 
@@ -292,10 +373,8 @@ export function GraphCanvas({
         if (!a || !b) return null;
         const st = edgeState(e);
         const style = EDGE_STYLES[st];
-        const bend = antiParallel.has(e.id) ? 34 : 0;
-        const geo = bend
-          ? curvedGeometry(a.x, a.y, b.x, b.y, bend, graph.directed)
-          : straightGeometry(a.x, a.y, b.x, b.y, graph.directed);
+        const geo = edgeGeo.get(e.id);
+        if (!geo) return null;
         const onPath = frame?.pathEdges?.includes(e.id);
         const isCut = frame?.cutEdges?.includes(e.id);
         const label = frame?.edgeBadges?.[e.id] ?? (graph.weighted ? String(e.weight) : '');
@@ -486,22 +565,32 @@ export function GraphCanvas({
                 strokeLinecap="round"
               />
             )}
-            {badge && (
-              <text
-                key={`${n.id}-${badge}`}
-                className="pop-in"
-                x={n.x}
-                y={n.y + R + 17}
-                textAnchor="middle"
-                fontSize={13}
-                fontWeight={600}
-                fontFamily="'JetBrains Mono', monospace"
-                fill={st === 'idle' ? 'var(--ink-faint)' : style.stroke}
-                style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-              >
-                {badge}
-              </text>
-            )}
+            {badge &&
+              (() => {
+                const at = badgeSpot.get(n.id) ?? { x: n.x, y: n.y + R + 15, ux: 0, uy: 1 };
+                return (
+                  <text
+                    key={`${n.id}-${badge}`}
+                    className="pop-in"
+                    x={at.x}
+                    y={at.y}
+                    textAnchor={at.ux > 0.4 ? 'start' : at.ux < -0.4 ? 'end' : 'middle'}
+                    dominantBaseline={at.uy > 0.4 ? 'hanging' : at.uy < -0.4 ? 'auto' : 'central'}
+                    fontSize={13}
+                    fontWeight={600}
+                    fontFamily="'JetBrains Mono', monospace"
+                    fill={st === 'idle' ? 'var(--ink-faint)' : style.stroke}
+                    /* A halo keeps the label readable if a line still runs close */
+                    stroke="var(--surface)"
+                    strokeWidth={3.5}
+                    strokeLinejoin="round"
+                    paintOrder="stroke"
+                    style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                  >
+                    {badge}
+                  </text>
+                );
+              })()}
           </g>
         );
       })}

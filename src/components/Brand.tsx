@@ -13,7 +13,10 @@ export function Brand({ onClick }: Props) {
         border: 0,
         cursor: onClick ? 'pointer' : 'default',
         padding: 0,
-        minHeight: 44,
+        minHeight: 'var(--tap)',
+        // The mark shrinks to one letter on a narrow bar, the tap target does not
+        minWidth: 'var(--tap)',
+        justifyContent: 'center',
         paddingInline: 2,
       }}
     >

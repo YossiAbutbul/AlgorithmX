@@ -156,6 +156,7 @@ export function TransportRail({
         <div ref={legendWrap} className="relative flex-none">
           <button
             className="btn btn-sm"
+            aria-label="מקרא"
             aria-expanded={legendOpen}
             onClick={() => setLegendOpen((v) => !v)}
           >

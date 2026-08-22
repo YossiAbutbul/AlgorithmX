@@ -257,7 +257,11 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
 
         </div>
 
-        <button className="btn btn-sm flex-none" onClick={() => setEditing((v) => !v)}>
+        <button
+          className="btn btn-sm flex-none"
+          aria-label={editing ? 'סגור עורך' : 'ערוך גרף'}
+          onClick={() => setEditing((v) => !v)}
+        >
           {editing ? <X size={15} aria-hidden="true" /> : <Pencil size={15} aria-hidden="true" />}
           <span className="hidden sm:inline">{editing ? 'סגור עורך' : 'ערוך גרף'}</span>
         </button>

@@ -252,7 +252,7 @@ export function GraphCanvas({
    * tool first, clicking one node, then clicking the other works as well, but
    * this is the path that costs no trip to the toolbar.
    */
-  function handleLinkStart(evt: React.MouseEvent<SVGCircleElement>, id: NodeId) {
+  function handleLinkStart(evt: React.PointerEvent<SVGGElement>, id: NodeId) {
     if (!onConnect) return;
     evt.preventDefault();
     evt.stopPropagation();
@@ -262,13 +262,14 @@ export function GraphCanvas({
     const rect = svg.getBoundingClientRect();
     setLinkDrag({ from: id, x: from.x, y: from.y });
 
-    const move = (ev: MouseEvent) => {
+    const move = (ev: PointerEvent) => {
       const p = toGraph(rect, ev.clientX, ev.clientY);
       setLinkDrag({ from: id, x: p.x, y: p.y });
     };
-    const up = (ev: MouseEvent) => {
-      window.removeEventListener('mousemove', move);
-      window.removeEventListener('mouseup', up);
+    const up = (ev: PointerEvent) => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
       setLinkDrag(null);
       const p = toGraph(rect, ev.clientX, ev.clientY);
       const target = graph.nodes.find(
@@ -276,18 +277,25 @@ export function GraphCanvas({
       );
       if (target) onConnect(id, target.id);
     };
-    window.addEventListener('mousemove', move);
-    window.addEventListener('mouseup', up);
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
   }
 
-  function handleDragStart(evt: React.MouseEvent<SVGGElement>, id: NodeId) {
+  /*
+   * Pointer events, not mouse events: a finger never sends a mousemove, so on a
+   * touch screen a drag went to the page as a scroll and the node stayed put.
+   * The groups that accept a drag also take touch-action none, so the gesture
+   * reaches them, while a drag anywhere else on the canvas still scrolls.
+   */
+  function handleDragStart(evt: React.PointerEvent<SVGGElement>, id: NodeId) {
     if (!onNodeDrag) return;
     evt.preventDefault();
     evt.stopPropagation();
     const svg = evt.currentTarget.ownerSVGElement;
     if (!svg) return;
     const rect = svg.getBoundingClientRect();
-    const move = (ev: MouseEvent) => {
+    const move = (ev: PointerEvent) => {
       const p = toGraph(rect, ev.clientX, ev.clientY);
       onNodeDrag(
         id,
@@ -296,12 +304,14 @@ export function GraphCanvas({
       );
     };
     const up = () => {
-      window.removeEventListener('mousemove', move);
-      window.removeEventListener('mouseup', up);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
       onNodeDragEnd?.();
     };
-    window.addEventListener('mousemove', move);
-    window.addEventListener('mouseup', up);
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
   }
 
   const states: EdgeState[] = [
@@ -585,13 +595,16 @@ export function GraphCanvas({
             key={n.id}
             onMouseEnter={() => onHoverNode?.(n.id)}
             onMouseLeave={() => onHoverNode?.(null)}
-            onMouseDown={(e) => handleDragStart(e, n.id)}
+            onPointerDown={(e) => handleDragStart(e, n.id)}
             onClick={(e) => {
               if (!onNodeClick) return;
               e.stopPropagation();
               onNodeClick(n.id);
             }}
-            style={{ cursor: onNodeClick || onNodeDrag ? 'pointer' : 'default' }}
+            style={{
+              cursor: onNodeClick || onNodeDrag ? 'pointer' : 'default',
+              touchAction: onNodeDrag ? 'none' : undefined,
+            }}
           >
             {(isHovered || isSelected) && (
               <circle
@@ -671,8 +684,8 @@ export function GraphCanvas({
               */}
             {onConnect && (isHovered || isSelected) && !linkDrag && (
               <g
-                style={{ cursor: 'crosshair' }}
-                onMouseDown={(ev) => handleLinkStart(ev as unknown as React.MouseEvent<SVGCircleElement>, n.id)}
+                style={{ cursor: 'crosshair', touchAction: 'none' }}
+                onPointerDown={(ev) => handleLinkStart(ev, n.id)}
               >
                 <circle
                   cx={n.x + at.mark.ux * (R + 9)}

@@ -712,6 +712,7 @@
 @utility footer-link {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.3rem;
   font-size: 12px;
   line-height: 1;
@@ -719,6 +720,12 @@
   text-decoration: none;
   border-radius: 6px;
   padding: 0.35rem 0.4rem;
+
+  /* An icon sized link is a 26px target on a finger, so touch gets the minimum */
+  @media (pointer: coarse) {
+    min-height: var(--tap);
+    min-width: var(--tap);
+  }
   transition:
     color 0.15s ease,
     background-color 0.15s ease;

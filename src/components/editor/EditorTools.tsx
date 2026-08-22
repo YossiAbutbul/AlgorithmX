@@ -71,7 +71,13 @@ export function EditorTools({ draft, onSave }: Props) {
         ))}
       </div>
 
-      <button className="btn btn-sm" disabled={!draft.canUndo} onClick={draft.undo} title="Ctrl+Z">
+      <button
+        className="btn btn-sm"
+        disabled={!draft.canUndo}
+        onClick={draft.undo}
+        aria-label="בטל"
+        title="Ctrl+Z"
+      >
         <Undo2 size={15} aria-hidden="true" />
         <span className="hidden lg:inline">בטל</span>
       </button>
@@ -88,6 +94,7 @@ export function EditorTools({ draft, onSave }: Props) {
         className="btn btn-sm"
         disabled={!draft.selection}
         onClick={draft.deleteSelection}
+        aria-label="מחק"
         title="Delete"
       >
         <Trash2 size={15} aria-hidden="true" />
@@ -99,6 +106,7 @@ export function EditorTools({ draft, onSave }: Props) {
       <div ref={wrap} className="relative flex-none">
         <button
           className="btn btn-sm"
+          aria-label="ייבוא וייצוא JSON"
           aria-expanded={ioOpen}
           onClick={() => {
             setText(exportGraph(draft.graph));
@@ -137,7 +145,7 @@ export function EditorTools({ draft, onSave }: Props) {
         )}
       </div>
 
-      <button className="btn btn-sm" onClick={draft.revert}>
+      <button className="btn btn-sm" aria-label="חזור לגרף המוכן" onClick={draft.revert}>
         <RotateCcw size={15} aria-hidden="true" />
         <span className="hidden lg:inline">גרף מוכן</span>
       </button>

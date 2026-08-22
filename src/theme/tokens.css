@@ -548,6 +548,18 @@
   white-space: nowrap;
 }
 
+@utility caption-line {
+  /*
+   * The narration is one line on most steps and two on the longer ones. The
+   * stage is clamped to what the window has left, so a second line was taken
+   * straight out of the graph, which shrank by 24px mid run and grew back. Two
+   * lines are held whatever the step says, and the drawing stays put.
+   */
+  display: flex;
+  align-items: center;
+  min-height: calc(2 * 1.4 * var(--step-3));
+}
+
 @utility caption-sub {
   /* The caption's second row keeps its height whatever fills it. */
   display: flex;

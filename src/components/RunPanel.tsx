@@ -339,7 +339,7 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
           <div className="stage-caption">
             {editing ? (
               <>
-                <p aria-live="polite" className="flex items-start gap-2.5">
+                <p aria-live="polite" className="caption-line items-start gap-2.5">
                   <span className="event-chip" style={{ background: 'var(--accent-strong)' }}>
                     עריכה
                   </span>
@@ -354,7 +354,7 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
               </>
             ) : (
             <>
-            <p aria-live="polite">
+            <p aria-live="polite" className="caption-line">
               {frame ? (
                 <span key={player.index} className="caption-swap flex items-start gap-2.5">
                   <span className="event-chip" style={{ background: EVENT_INK[frame.event] }}>

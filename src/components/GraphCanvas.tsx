@@ -13,6 +13,7 @@ import {
   R,
   curvedGeometry,
   edgeGeometry,
+  edgeLabelSpots,
   graphView,
   markOffset,
   nodeAnchors,
@@ -149,6 +150,8 @@ export function GraphCanvas({
   const pos = useMemo(() => nodePositions(graph), [graph]);
   const edgeGeo = useMemo(() => edgeGeometry(graph), [graph]);
   const anchors = useMemo(() => nodeAnchors(graph, edgeGeo), [graph, edgeGeo]);
+  /** Weight and flow labels, slid clear of crossings and of each other. */
+  const labelSpot = useMemo(() => edgeLabelSpots(graph, edgeGeo), [graph, edgeGeo]);
 
   /** The frame is fitted to what is drawn, not to the authored canvas. */
   const view = useMemo(() => graphView(graph), [graph]);
@@ -345,6 +348,7 @@ export function GraphCanvas({
             : 1;
 
         const isPicked = selectedEdge === e.id;
+        const labelAt = labelSpot.get(e.id) ?? { x: geo.midX, y: geo.midY };
 
         return (
           <g key={e.id} opacity={dim}>
@@ -413,8 +417,8 @@ export function GraphCanvas({
             {label !== '' && (
               <g>
                 <rect
-                  x={geo.midX - (label.length * 3.6 + 6)}
-                  y={geo.midY - 10}
+                  x={labelAt.x - (label.length * 3.6 + 6)}
+                  y={labelAt.y - 10}
                   width={label.length * 7.2 + 12}
                   height={19}
                   rx={6}
@@ -429,8 +433,8 @@ export function GraphCanvas({
                   strokeWidth={isCut || isPicked ? 1.6 : 1}
                 />
                 <text
-                  x={geo.midX}
-                  y={geo.midY + 4}
+                  x={labelAt.x}
+                  y={labelAt.y + 4}
                   textAnchor="middle"
                   fontSize={12}
                   fontFamily="'JetBrains Mono', monospace"

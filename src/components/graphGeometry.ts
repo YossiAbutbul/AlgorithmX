@@ -29,6 +29,8 @@ export interface Geometry {
   path: string;
   midX: number;
   midY: number;
+  /** A point along the drawn edge, so a label can slide off a crossing. */
+  pointAt: (t: number) => { x: number; y: number };
 }
 
 export function straightGeometry(
@@ -52,6 +54,7 @@ export function straightGeometry(
     path: `M ${sx} ${sy} L ${ex} ${ey}`,
     midX: (sx + ex) / 2,
     midY: (sy + ey) / 2,
+    pointAt: (t: number) => ({ x: sx + (ex - sx) * t, y: sy + (ey - sy) * t }),
   };
 }
 
@@ -85,6 +88,13 @@ export function curvedGeometry(
     path: `M ${sx} ${sy} Q ${cx} ${cy} ${ex} ${ey}`,
     midX: 0.25 * sx + 0.5 * cx + 0.25 * ex,
     midY: 0.25 * sy + 0.5 * cy + 0.25 * ey,
+    pointAt: (t: number) => {
+      const u = 1 - t;
+      return {
+        x: u * u * sx + 2 * u * t * cx + t * t * ex,
+        y: u * u * sy + 2 * u * t * cy + t * t * ey,
+      };
+    },
   };
 }
 
@@ -212,6 +222,69 @@ export function nodeAnchors(
   return anchors;
 }
 
+/** Roughly the box a weight or flow label draws, used to keep them apart. */
+const LABEL_HALF_W = 24;
+const LABEL_HALF_H = 11;
+
+/** Where along an edge a label may sit, tried in this order. */
+const LABEL_STOPS = [0.5, 0.38, 0.62, 0.3, 0.7, 0.24, 0.76];
+
+/**
+ * Edge labels used to sit at the geometric midpoint, which puts two of them on
+ * top of each other wherever two edges cross near their middles: in the flow
+ * network with the 1 capacity, s to t and u to v cross at their midpoints and
+ * the two capsules landed two units apart. Slide each label along its own edge
+ * to the spot furthest from the other edges, the other labels and the nodes.
+ */
+export function edgeLabelSpots(
+  graph: GraphModel,
+  edgeGeo: Map<string, Geometry>,
+): Map<string, { x: number; y: number }> {
+  const spots = new Map<string, { x: number; y: number }>();
+
+  /** Points along every edge, so a label can be told it is lying on a line. */
+  const lineSamples: { x: number; y: number }[] = [];
+  for (const geo of edgeGeo.values()) {
+    for (let i = 1; i < 10; i += 1) lineSamples.push(geo.pointAt(i / 10));
+  }
+
+  for (const e of graph.edges) {
+    const geo = edgeGeo.get(e.id);
+    if (!geo) continue;
+    const own: { x: number; y: number }[] = [];
+    for (let i = 1; i < 10; i += 1) own.push(geo.pointAt(i / 10));
+
+    let best = geo.pointAt(0.5);
+    let bestScore = -Infinity;
+
+    for (const t of LABEL_STOPS) {
+      const at = geo.pointAt(t);
+      let clearance = Infinity;
+
+      // Its own line runs under the label by definition, so it is not counted
+      for (const p of lineSamples) {
+        if (own.some((o) => Math.hypot(o.x - p.x, o.y - p.y) < 0.001)) continue;
+        clearance = Math.min(clearance, Math.hypot(p.x - at.x, p.y - at.y));
+      }
+      for (const n of graph.nodes) {
+        clearance = Math.min(clearance, Math.hypot(n.x - at.x, n.y - at.y) - R);
+      }
+      for (const placed of spots.values()) {
+        clearance = Math.min(clearance, Math.hypot(placed.x - at.x, placed.y - at.y));
+      }
+
+      // Past this much room nothing is in the way, so the middle keeps the label
+      const score = Math.min(clearance, LABEL_HALF_W + 6);
+      if (score > bestScore + 0.001) {
+        bestScore = score;
+        best = at;
+      }
+    }
+    spots.set(e.id, best);
+  }
+  return spots;
+}
+
 export interface GraphView {
   x: number;
   y: number;
@@ -254,7 +327,9 @@ export function graphView(graph: GraphModel): GraphView {
   }
 
   if (graph.weighted || graph.flow) {
-    for (const geo of edgeGeo.values()) grow(geo.midX, geo.midY, 26, 12);
+    for (const at of edgeLabelSpots(graph, edgeGeo).values()) {
+      grow(at.x, at.y, LABEL_HALF_W, LABEL_HALF_H);
+    }
   }
 
   return {

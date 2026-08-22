@@ -218,7 +218,7 @@ function auxOf(
       title: searchTitle,
       columns: ['צומת', 'הגיע מ'],
       rows: rows.map(([node, from]) => ({ key: node, values: [node, from] })),
-      note: 'החיפוש רץ על הגרף השאריתי, ולא על הגרף המקורי',
+      note: 'החיפוש רץ על הגרף השיורי, ולא על הגרף המקורי',
     });
   }
   return views;
@@ -263,7 +263,7 @@ export function flowRun(graph: GraphModel, opts: RunOptions, config: FlowRunConf
   b.setNode(t, 'frontier');
   b.emit({
     event: 'init',
-    message: `אתחול: הזרימה בכל צלע היא 0, והגרף השאריתי זהה בשלב הזה לרשת המקורית. מחפשים מסלול הגדלה מ-${s} אל ${t}.`,
+    message: `אתחול: הזרימה בכל צלע היא 0, והגרף השיורי זהה בשלב הזה לרשת המקורית. מחפשים מסלול הגדלה מ-${s} אל ${t}.`,
     aux: auxOf(graph, flow, total, {}, config.searchTitle),
     codeLine: 1,
     edgeBadges: badges(),
@@ -288,7 +288,7 @@ export function flowRun(graph: GraphModel, opts: RunOptions, config: FlowRunConf
       for (const n of graph.nodes) b.setNode(n.id, inSet.has(n.id) ? 'current' : 'done');
       b.emit({
         event: 'done',
-        message: `אין יותר מסלול הגדלה. הזרימה המקסימלית היא ${total}. הצמתים הנגישים מ-${s} בגרף השאריתי הם ${reachable.join(', ')}, והצלעות שיוצאות מהם הן החתך המינימלי בקיבול ${cutCap}, בדיוק כמו הזרימה.`,
+        message: `אין יותר מסלול הגדלה. הזרימה המקסימלית היא ${total}. הצמתים הנגישים מ-${s} בגרף השיורי הם ${reachable.join(', ')}, והצלעות שיוצאות מהם הן החתך המינימלי בקיבול ${cutCap}, בדיוק כמו הזרימה.`,
         aux: auxOf(graph, flow, total, {}, config.searchTitle),
         codeLine: 7,
         edgeBadges: badges(),

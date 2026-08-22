@@ -7,7 +7,7 @@ export function edmondsKarpRun(graph: GraphModel, opts: RunOptions): Frame[] {
   return flowRun(graph, opts, {
     search: bfsAugmenting,
     searchName: 'BFS',
-    searchTitle: 'BFS בגרף השאריתי',
+    searchTitle: 'BFS בגרף השיורי',
   });
 }
 

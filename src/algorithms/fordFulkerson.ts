@@ -7,7 +7,7 @@ export function fordFulkersonRun(graph: GraphModel, opts: RunOptions): Frame[] {
   return flowRun(graph, opts, {
     search: dfsAugmenting,
     searchName: 'חיפוש לעומק',
-    searchTitle: 'חיפוש לעומק בגרף השאריתי',
+    searchTitle: 'חיפוש לעומק בגרף השיורי',
   });
 }
 
@@ -23,7 +23,7 @@ export const fordFulkersonModule: AlgorithmModule = {
     {
       id: 'residual',
       nameHe: 'רשת 100 מול 1',
-      whyHe: 'כאן בחירת מסלול גרועה מכריחה את האלגוריתם להשתמש בצלע שאריתית ולבטל בחירה קודמת.',
+      whyHe: 'כאן בחירת מסלול גרועה מכריחה את האלגוריתם להשתמש בצלע שיורית ולבטל בחירה קודמת.',
       graph: flowResidual(),
       source: 's',
       sink: 't',

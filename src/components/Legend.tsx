@@ -159,7 +159,7 @@ export function Legend({ flow = false, frames }: LegendProps) {
     { label: 'נדחתה', stroke: '#98a1c0', width: 2, dash: '3 6' },
   ];
   if (flow) {
-    edgeItems.push({ label: 'שאריתית', stroke: 'var(--state-frontier)', width: 3, dash: '7 5' });
+    edgeItems.push({ label: 'שיורית', stroke: 'var(--state-frontier)', width: 3, dash: '7 5' });
   }
 
   const events = frames ? Array.from(new Set(frames.map((f) => f.event))) : [];

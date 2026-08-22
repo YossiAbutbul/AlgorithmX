@@ -1292,8 +1292,8 @@
 }
 
 .edge-flow {
-  /* Slow enough to follow along the line rather than shimmer on it. */
-  animation: dashFlow 1.5s linear infinite;
+  /* Twenty two units over this long is a drift the eye can follow, not a scroll. */
+  animation: dashFlow 2.8s linear infinite;
 }
 
 /* A newly chosen tree edge draws itself from the parent outward. */
@@ -1340,7 +1340,8 @@
 }
 
 .residual-flow {
-  animation: residualFlow 1.8s linear infinite;
+  /* Two dashes over four seconds: about six units a second, a slow crawl back. */
+  animation: residualFlow 4s linear infinite;
 }
 
 /* Items entering a queue, stack or set slide in from the tail. */

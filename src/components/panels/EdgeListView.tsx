@@ -10,13 +10,13 @@ const STATUS: Record<
   pending: { label: 'ממתינה', color: 'var(--ink-soft)', bg: 'transparent', mark: 'pending' },
   taken: {
     label: 'נלקחה',
-    color: 'var(--state-done)',
+    color: 'var(--state-done-ink)',
     bg: 'var(--state-done-fill)',
     mark: 'taken',
   },
   rejected: {
     label: 'נדחתה',
-    color: 'var(--state-rejected)',
+    color: 'var(--state-rejected-ink)',
     bg: 'var(--state-rejected-fill)',
     mark: 'rejected',
   },

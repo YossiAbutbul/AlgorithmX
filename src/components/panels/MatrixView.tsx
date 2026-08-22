@@ -54,7 +54,7 @@ export function MatrixView({ view }: { view: M }) {
                           cell === null
                             ? 'var(--ink-soft)'
                             : isChanged
-                              ? 'var(--state-current)'
+                              ? 'var(--state-current-ink)'
                               : 'var(--ink)',
                         fontWeight: isChanged ? 700 : 400,
                         minWidth: 42,

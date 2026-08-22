@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Unlink } from 'lucide-react';
 import { ALGORITHMS, getAlgorithm } from '../algorithms';
 import type { Frame, GraphModel, NodeId } from '../algorithms/types';
 import { AuxPanel } from '../components/panels/AuxPanel';
-import { EVENT_COLOR, EVENT_LABEL } from '../components/events';
+import { EVENT_INK, EVENT_LABEL } from '../components/events';
 import { GraphCanvas } from '../components/GraphCanvas';
 import { graphAspect } from '../components/graphGeometry';
 import { TransportRail } from '../components/TransportRail';
@@ -54,7 +54,7 @@ function Side({ title, graph, frames, index, onSeek, synced }: SideProps) {
         <p className="stage-caption" aria-live="polite" style={{ fontSize: 'var(--step-2)' }}>
           {frame && (
             <span key={i} className="caption-swap flex items-start gap-2.5">
-              <span className="event-chip" style={{ background: EVENT_COLOR[frame.event] }}>
+              <span className="event-chip" style={{ background: EVENT_INK[frame.event] }}>
                 {EVENT_LABEL[frame.event]}
               </span>
               <span>{frame.message}</span>

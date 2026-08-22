@@ -4,7 +4,7 @@ import { Eye, GitCompareArrows, Network, Pencil, TriangleAlert, X } from 'lucide
 import type { AlgorithmModule, GraphModel, NodeId, NodeState } from '../algorithms/types';
 import { validateGraph } from '../algorithms/validate';
 import { AuxPanel } from './panels/AuxPanel';
-import { EVENT_COLOR, EVENT_LABEL } from './events';
+import { EVENT_INK, EVENT_LABEL } from './events';
 import { GraphCanvas } from './GraphCanvas';
 import { graphAspect } from './graphGeometry';
 import { EditorRail } from './editor/EditorRail';
@@ -383,7 +383,7 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
             <p aria-live="polite">
               {frame ? (
                 <span key={player.index} className="caption-swap flex items-start gap-2.5">
-                  <span className="event-chip" style={{ background: EVENT_COLOR[frame.event] }}>
+                  <span className="event-chip" style={{ background: EVENT_INK[frame.event] }}>
                     {EVENT_LABEL[frame.event]}
                   </span>
                   <span>{frame.message}</span>

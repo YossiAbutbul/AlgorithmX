@@ -27,30 +27,47 @@ import {
 interface NodeStyle {
   fill: string;
   stroke: string;
+  /** The same state at reading weight, for the label beside the node. */
+  ink: string;
   width: number;
   dash?: string;
   glyph: 'none' | 'ring' | 'cross';
 }
 
 const NODE_STYLES: Record<NodeState, NodeStyle> = {
-  idle: { fill: 'var(--surface)', stroke: 'var(--state-idle-line)', width: 1.6, glyph: 'none' },
+  idle: {
+    fill: 'var(--surface)',
+    stroke: 'var(--state-idle-line)',
+    ink: 'var(--ink-faint)',
+    width: 1.6,
+    glyph: 'none',
+  },
   /* Fill and ring carry the state on their own; a second mark only added noise. */
   frontier: {
     fill: 'var(--state-frontier-fill)',
     stroke: 'var(--state-frontier)',
+    ink: 'var(--state-frontier-ink)',
     width: 3,
     glyph: 'none',
   },
   current: {
     fill: 'var(--state-current-fill)',
     stroke: 'var(--state-current)',
+    ink: 'var(--state-current-ink)',
     width: 4,
     glyph: 'ring',
   },
-  done: { fill: 'var(--state-done-fill)', stroke: 'var(--state-done)', width: 3, glyph: 'none' },
+  done: {
+    fill: 'var(--state-done-fill)',
+    stroke: 'var(--state-done)',
+    ink: 'var(--state-done-ink)',
+    width: 3,
+    glyph: 'none',
+  },
   rejected: {
     fill: 'var(--state-rejected-fill)',
     stroke: 'var(--state-rejected)',
+    ink: 'var(--state-rejected-ink)',
     width: 2,
     dash: '5 4',
     glyph: 'cross',
@@ -500,7 +517,7 @@ export function GraphCanvas({
                   textAnchor="middle"
                   fontSize={12}
                   fontFamily="'JetBrains Mono', monospace"
-                  fill={isCut ? 'var(--state-current)' : 'var(--ink)'}
+                  fill={isCut ? 'var(--state-current-ink)' : 'var(--ink)'}
                 >
                   {label}
                 </text>
@@ -542,7 +559,7 @@ export function GraphCanvas({
               textAnchor="middle"
               fontSize={11}
               fontFamily="'JetBrains Mono', monospace"
-              fill="var(--state-frontier)"
+              fill="var(--state-frontier-ink)"
             >
               {text}
             </text>
@@ -586,9 +603,9 @@ export function GraphCanvas({
         const isSelected = selectedNodes.includes(n.id);
         const role =
           n.id === sourceNode
-            ? { label: 'מקור', color: 'var(--state-frontier)' }
+            ? { label: 'מקור', color: 'var(--state-frontier-ink)' }
             : n.id === sinkNode
-              ? { label: 'בור', color: 'var(--state-done)' }
+              ? { label: 'בור', color: 'var(--state-done-ink)' }
               : null;
         return (
           <g
@@ -719,7 +736,7 @@ export function GraphCanvas({
                     fontSize={13}
                     fontWeight={600}
                     fontFamily="'JetBrains Mono', monospace"
-                    fill={st === 'idle' ? 'var(--ink-faint)' : style.stroke}
+                    fill={style.ink}
                     /* A halo keeps the label readable if a line still runs close */
                     stroke="var(--surface)"
                     strokeWidth={3.5}

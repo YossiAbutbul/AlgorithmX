@@ -810,7 +810,8 @@
   --surface-sunken: #f5f7fe;
   --ink: #171d3e;
   --ink-soft: #5b6595;
-  --ink-faint: #8990b6;
+  /* Darkened to clear 4.5:1 on the page, where it sat at 2.77. */
+  --ink-faint: #616a95;
   --line: #e0e5f6;
   --line-soft: #edf0fa;
   --accent: #5b3fd1;
@@ -829,6 +830,19 @@
   --state-rejected: #98a1c0;
   --state-rejected-fill: #eef0f7;
   --state-quiet: #b7bfda;
+
+  /*
+   * The reading weight of each state. The colours above are drawn on a graph as
+   * a stroke or a fill, where they are shapes and read fine. As type, or with
+   * type on top of them, they were far too light: white on the amber chip came
+   * out at 2.77 and the teal in a table at 3.01. These carry the same hues at a
+   * depth that clears 4.5:1, and nothing on the graph uses them.
+   */
+  --state-frontier-ink: #8a5605;
+  --state-current-ink: #c22a44;
+  --state-done-ink: #0b7263;
+  --state-rejected-ink: #5a6485;
+  --state-quiet-ink: #626d8f;
 
   /* What reads on top of a filled accent: a primary button, an event chip. */
   --on-accent: #ffffff;
@@ -910,6 +924,13 @@
   --state-rejected: #6f7799;
   --state-rejected-fill: #232740;
   --state-quiet: #495173;
+
+  /* On a dark ground the reading weight is the lighter one, not the deeper. */
+  --state-frontier-ink: #efa93f;
+  --state-current-ink: #f4677f;
+  --state-done-ink: #3ecfae;
+  --state-rejected-ink: #8a93b8;
+  --state-quiet-ink: #7d87ab;
 
   /* The accent is light here, so what sits on it is the dark ground, not white. */
   --on-accent: #15182b;

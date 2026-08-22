@@ -63,7 +63,7 @@ export function DijkstraNegativeInsight({ onNavigate }: { onNavigate: (id: strin
                 <td className="num border-b border-line px-2 py-1 font-bold">{id}</td>
                 <td
                   className="num border-b border-line px-2 py-1"
-                  style={{ color: bad ? 'var(--state-current)' : 'var(--ink)' }}
+                  style={{ color: bad ? 'var(--state-current-ink)' : 'var(--ink)' }}
                 >
                   {wrong[id]}
                   {bad ? ' (שגוי)' : ''}
@@ -128,7 +128,7 @@ export function FlowIterationInsight({ onCompare }: { onCompare: () => void }) {
               <td className="num border-b border-line px-2 py-1">{r.ff}</td>
               <td
                 className="num border-b border-line px-2 py-1"
-                style={{ color: 'var(--state-done)', fontWeight: 700 }}
+                style={{ color: 'var(--state-done-ink)', fontWeight: 700 }}
               >
                 {r.ek}
               </td>

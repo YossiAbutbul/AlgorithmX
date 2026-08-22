@@ -7,7 +7,7 @@ export function FlowTable({ view }: { view: F }) {
     <div>
       <div className="mb-2 flex items-center justify-between rounded-lg bg-sunken px-3 py-1.5">
         <span className="text-(length:--step-2) font-semibold">זרימה כוללת</span>
-        <span className="num text-(length:--step-4) font-bold" style={{ color: 'var(--state-done)' }}>
+        <span className="num text-(length:--step-4) font-bold" style={{ color: 'var(--state-done-ink)' }}>
           {view.totalFlow}
         </span>
       </div>

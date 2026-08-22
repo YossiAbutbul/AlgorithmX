@@ -1,5 +1,5 @@
 import type { Frame, NodeState } from '../algorithms/types';
-import { EVENT_COLOR, EVENT_LABEL } from './events';
+import { EVENT_INK, EVENT_LABEL } from './events';
 
 interface LegendProps {
   flow?: boolean;
@@ -190,7 +190,7 @@ export function Legend({ flow = false, frames }: LegendProps) {
             <span key={ev} className="flex items-center gap-1.5">
               <span
                 className="inline-block h-3 w-3 rounded-xs"
-                style={{ background: EVENT_COLOR[ev] }}
+                style={{ background: EVENT_INK[ev] }}
               />
               {EVENT_LABEL[ev]}
             </span>

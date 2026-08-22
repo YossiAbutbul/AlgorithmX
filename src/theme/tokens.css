@@ -634,6 +634,21 @@
   animation: popIn 0.2s var(--ease-spring) both;
 }
 
+@utility popover-rail {
+  /*
+   * Panels raised from the rail. Their buttons sit at the far inline end of the
+   * bar, so anchoring the panel's end edge to the button grows it away from the
+   * page and off the window: the legend was cut off by 416px at a 689px window.
+   * Anchor the near edge instead, so the panel opens inward, and cap it at what
+   * the window can actually show.
+   */
+  bottom: calc(100% + 8px);
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  width: max-content;
+  max-width: min(520px, calc(100vw - 2rem));
+}
+
 @utility scroll-overlay {
   /* The page scrollbar is hidden, so a thin one floats over the content. */
   position: fixed;

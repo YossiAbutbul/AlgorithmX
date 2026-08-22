@@ -163,10 +163,7 @@ export function TransportRail({
             <span className="hidden sm:inline">מקרא</span>
           </button>
           {legendOpen && (
-            <div
-              className="popover"
-              style={{ bottom: 'calc(100% + 8px)', insetInlineStart: 0, width: 'max-content', maxWidth: 'min(520px, 90vw)' }}
-            >
+            <div className="popover popover-rail">
               <Legend flow={flow} frames={frames} />
             </div>
           )}

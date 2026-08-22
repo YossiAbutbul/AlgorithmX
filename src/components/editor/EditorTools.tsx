@@ -109,14 +109,7 @@ export function EditorTools({ draft, onSave }: Props) {
           <span className="hidden sm:inline">JSON</span>
         </button>
         {ioOpen && (
-          <div
-            className="popover flex flex-col gap-2"
-            style={{
-              bottom: 'calc(100% + 8px)',
-              insetInlineStart: 0,
-              width: 'min(420px, 88vw)',
-            }}
-          >
+          <div className="popover popover-rail flex w-[min(420px,calc(100vw-2rem))] flex-col gap-2">
             <p className="text-(length:--step-1) text-ink-soft">
               העתק את הגרף החוצה, או הדבק גרף ולחץ ייבוא.
             </p>

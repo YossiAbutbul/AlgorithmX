@@ -222,65 +222,111 @@ export function nodeAnchors(
   return anchors;
 }
 
-/** Roughly the box a weight or flow label draws, used to keep them apart. */
-const LABEL_HALF_W = 24;
-const LABEL_HALF_H = 11;
+/** Half the height of any label capsule the canvas draws. */
+export const LABEL_HALF_H = 11;
+
+/** The half width of a label, from the same measurements the canvas draws with. */
+export function labelHalfWidth(text: string): number {
+  return text.length * 3.6 + 8;
+}
 
 /** Where along an edge a label may sit, tried in this order. */
 const LABEL_STOPS = [0.5, 0.38, 0.62, 0.3, 0.7, 0.24, 0.76];
 
+/** Past this much daylight a spot is clear enough, so the middle keeps the label. */
+const COMFORT = 5;
+
+export interface PlacedLabel {
+  x: number;
+  y: number;
+  halfW: number;
+  halfH: number;
+}
+
+/** Daylight between two boxes. Negative means they overlap. */
+function boxGap(a: PlacedLabel, b: PlacedLabel): number {
+  return Math.max(
+    Math.abs(a.x - b.x) - (a.halfW + b.halfW),
+    Math.abs(a.y - b.y) - (a.halfH + b.halfH),
+  );
+}
+
+function samplesOf(geo: Geometry): PlacedLabel[] {
+  const out: PlacedLabel[] = [];
+  for (let i = 1; i < 12; i += 1) {
+    const p = geo.pointAt(i / 12);
+    out.push({ x: p.x, y: p.y, halfW: 1, halfH: 1 });
+  }
+  return out;
+}
+
 /**
- * Edge labels used to sit at the geometric midpoint, which puts two of them on
- * top of each other wherever two edges cross near their middles: in the flow
- * network with the 1 capacity, s to t and u to v cross at their midpoints and
- * the two capsules landed two units apart. Slide each label along its own edge
- * to the spot furthest from the other edges, the other labels and the nodes.
+ * Slides a label along its own line to the spot with the most daylight around
+ * it. A label pinned to the midpoint lands on whatever crosses there, and two
+ * of them land on each other, which is what happened where the flow network's
+ * s to t and u to v edges meet.
+ */
+export function placeLabel(
+  geo: Geometry,
+  halfW: number,
+  obstacles: PlacedLabel[],
+): PlacedLabel {
+  let best: PlacedLabel | null = null;
+  let bestGap = -Infinity;
+
+  for (const t of LABEL_STOPS) {
+    const at = geo.pointAt(t);
+    const box: PlacedLabel = { x: at.x, y: at.y, halfW, halfH: LABEL_HALF_H };
+    let gap = Infinity;
+    for (const o of obstacles) {
+      gap = Math.min(gap, boxGap(box, o));
+      if (gap <= bestGap) break;
+    }
+    if (gap > bestGap) {
+      bestGap = gap;
+      best = box;
+      // The midpoint is the natural home, so stop as soon as one is clear
+      if (gap >= COMFORT) break;
+    }
+  }
+
+  return best ?? { ...geo.pointAt(0.5), halfW, halfH: LABEL_HALF_H };
+}
+
+/**
+ * Every weight or capacity label, placed so that none of them lands on another
+ * or on a line it does not belong to. Labels are measured, not assumed: a flow
+ * badge reading 100/100 is two and a half times the width of a plain weight,
+ * and treating them alike left the wide ones overlapping.
  */
 export function edgeLabelSpots(
   graph: GraphModel,
   edgeGeo: Map<string, Geometry>,
-): Map<string, { x: number; y: number }> {
-  const spots = new Map<string, { x: number; y: number }>();
+  halfWidthOf?: (edgeId: string) => number,
+): Map<string, PlacedLabel> {
+  const spots = new Map<string, PlacedLabel>();
+  const nodes: PlacedLabel[] = graph.nodes.map((n) => ({
+    x: n.x,
+    y: n.y,
+    halfW: R,
+    halfH: R,
+  }));
 
-  /** Points along every edge, so a label can be told it is lying on a line. */
-  const lineSamples: { x: number; y: number }[] = [];
-  for (const geo of edgeGeo.values()) {
-    for (let i = 1; i < 10; i += 1) lineSamples.push(geo.pointAt(i / 10));
-  }
+  const samples = new Map<string, PlacedLabel[]>();
+  for (const [id, geo] of edgeGeo) samples.set(id, samplesOf(geo));
 
   for (const e of graph.edges) {
     const geo = edgeGeo.get(e.id);
     if (!geo) continue;
-    const own: { x: number; y: number }[] = [];
-    for (let i = 1; i < 10; i += 1) own.push(geo.pointAt(i / 10));
 
-    let best = geo.pointAt(0.5);
-    let bestScore = -Infinity;
-
-    for (const t of LABEL_STOPS) {
-      const at = geo.pointAt(t);
-      let clearance = Infinity;
-
-      // Its own line runs under the label by definition, so it is not counted
-      for (const p of lineSamples) {
-        if (own.some((o) => Math.hypot(o.x - p.x, o.y - p.y) < 0.001)) continue;
-        clearance = Math.min(clearance, Math.hypot(p.x - at.x, p.y - at.y));
-      }
-      for (const n of graph.nodes) {
-        clearance = Math.min(clearance, Math.hypot(n.x - at.x, n.y - at.y) - R);
-      }
-      for (const placed of spots.values()) {
-        clearance = Math.min(clearance, Math.hypot(placed.x - at.x, placed.y - at.y));
-      }
-
-      // Past this much room nothing is in the way, so the middle keeps the label
-      const score = Math.min(clearance, LABEL_HALF_W + 6);
-      if (score > bestScore + 0.001) {
-        bestScore = score;
-        best = at;
-      }
+    const obstacles: PlacedLabel[] = [...nodes, ...spots.values()];
+    for (const [id, pts] of samples) {
+      if (id === e.id) continue;
+      obstacles.push(...pts);
     }
-    spots.set(e.id, best);
+
+    const halfW = halfWidthOf?.(e.id) ?? labelHalfWidth(String(e.weight));
+    spots.set(e.id, placeLabel(geo, halfW, obstacles));
   }
   return spots;
 }
@@ -328,7 +374,7 @@ export function graphView(graph: GraphModel): GraphView {
 
   if (graph.weighted || graph.flow) {
     for (const at of edgeLabelSpots(graph, edgeGeo).values()) {
-      grow(at.x, at.y, LABEL_HALF_W, LABEL_HALF_H);
+      grow(at.x, at.y, at.halfW, at.halfH);
     }
   }
 

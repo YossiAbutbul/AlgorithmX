@@ -13,8 +13,11 @@ import {
   R,
   curvedGeometry,
   edgeGeometry,
+  LABEL_HALF_H,
   edgeLabelSpots,
   graphView,
+  labelHalfWidth,
+  placeLabel,
   markOffset,
   nodeAnchors,
   nodePositions,
@@ -150,8 +153,54 @@ export function GraphCanvas({
   const pos = useMemo(() => nodePositions(graph), [graph]);
   const edgeGeo = useMemo(() => edgeGeometry(graph), [graph]);
   const anchors = useMemo(() => nodeAnchors(graph, edgeGeo), [graph, edgeGeo]);
+  /** What each edge actually prints, so its label is measured and not guessed. */
+  const edgeLabelText = useMemo(() => {
+    const m = new Map<EdgeId, string>();
+    for (const e of graph.edges) {
+      m.set(e.id, frame?.edgeBadges?.[e.id] ?? (graph.weighted ? String(e.weight) : ''));
+    }
+    return m;
+  }, [graph, frame]);
+
   /** Weight and flow labels, slid clear of crossings and of each other. */
-  const labelSpot = useMemo(() => edgeLabelSpots(graph, edgeGeo), [graph, edgeGeo]);
+  const labelSpot = useMemo(
+    () => edgeLabelSpots(graph, edgeGeo, (id) => labelHalfWidth(edgeLabelText.get(id) ?? '')),
+    [graph, edgeGeo, edgeLabelText],
+  );
+
+  /**
+   * Residual arcs arrive with the frame and bend off their edge, so their
+   * amounts were the one label the placement never saw. They are laid out after
+   * the edge labels, against everything already on the canvas.
+   */
+  const residualLabel = useMemo(() => {
+    const out = new Map<EdgeId, { geo: ReturnType<typeof curvedGeometry>; at: ReturnType<typeof placeLabel> }>();
+    const list = frame?.residual ?? [];
+    if (list.length === 0) return out;
+
+    const obstacles = [
+      ...graph.nodes.map((n) => ({ x: n.x, y: n.y, halfW: R, halfH: R })),
+      ...labelSpot.values(),
+    ];
+    for (const geo of edgeGeo.values()) {
+      for (let i = 1; i < 12; i += 1) {
+        const p = geo.pointAt(i / 12);
+        obstacles.push({ x: p.x, y: p.y, halfW: 1, halfH: 1 });
+      }
+    }
+
+    for (const r of list) {
+      const e = graph.edges.find((x) => x.id === r.id);
+      const a = pos.get(e?.to ?? '');
+      const b = pos.get(e?.from ?? '');
+      if (!e || !a || !b) continue;
+      const geo = curvedGeometry(a.x, a.y, b.x, b.y, 30, true);
+      const at = placeLabel(geo, labelHalfWidth(String(r.amount)), obstacles);
+      obstacles.push(at);
+      out.set(r.id, { geo, at });
+    }
+    return out;
+  }, [frame, graph, edgeGeo, labelSpot, pos]);
 
   /** The frame is fitted to what is drawn, not to the authored canvas. */
   const view = useMemo(() => graphView(graph), [graph]);
@@ -339,7 +388,7 @@ export function GraphCanvas({
         if (!geo) return null;
         const onPath = frame?.pathEdges?.includes(e.id);
         const isCut = frame?.cutEdges?.includes(e.id);
-        const label = frame?.edgeBadges?.[e.id] ?? (graph.weighted ? String(e.weight) : '');
+        const label = edgeLabelText.get(e.id) ?? '';
         // Fading a node's neighbours reads well during a run and gets in the way
         // while editing, where every edge stays a target.
         const dim =
@@ -348,7 +397,9 @@ export function GraphCanvas({
             : 1;
 
         const isPicked = selectedEdge === e.id;
-        const labelAt = labelSpot.get(e.id) ?? { x: geo.midX, y: geo.midY };
+        const labelAt =
+          labelSpot.get(e.id) ??
+          { x: geo.midX, y: geo.midY, halfW: labelHalfWidth(label), halfH: LABEL_HALF_H };
 
         return (
           <g key={e.id} opacity={dim}>
@@ -417,10 +468,10 @@ export function GraphCanvas({
             {label !== '' && (
               <g>
                 <rect
-                  x={labelAt.x - (label.length * 3.6 + 6)}
-                  y={labelAt.y - 10}
-                  width={label.length * 7.2 + 12}
-                  height={19}
+                  x={labelAt.x - labelAt.halfW}
+                  y={labelAt.y - LABEL_HALF_H}
+                  width={labelAt.halfW * 2}
+                  height={LABEL_HALF_H * 2}
                   rx={6}
                   fill="var(--surface)"
                   stroke={
@@ -449,12 +500,10 @@ export function GraphCanvas({
       })}
 
       {(frame?.residual ?? []).map((r) => {
-        const e = graph.edges.find((x) => x.id === r.id);
-        if (!e) return null;
-        const a = pos.get(e.to);
-        const b = pos.get(e.from);
-        if (!a || !b) return null;
-        const geo = curvedGeometry(a.x, a.y, b.x, b.y, 30, true);
+        const placed = residualLabel.get(r.id);
+        if (!placed) return null;
+        const { geo, at } = placed;
+        const text = String(r.amount);
         return (
           <g key={`res-${r.id}`} opacity={r.active ? 1 : 0.55}>
             <path
@@ -465,15 +514,26 @@ export function GraphCanvas({
               strokeDasharray="7 5"
               markerEnd={`url(#${markerIdFor('residual')})`}
             />
+            {/* A capsule, so the amount stays readable where an arc runs under it */}
+            <rect
+              x={at.x - at.halfW}
+              y={at.y - LABEL_HALF_H}
+              width={at.halfW * 2}
+              height={LABEL_HALF_H * 2}
+              rx={6}
+              fill="var(--surface)"
+              stroke="var(--state-frontier)"
+              strokeWidth={1}
+            />
             <text
-              x={geo.midX}
-              y={geo.midY + 4}
+              x={at.x}
+              y={at.y + 4}
               textAnchor="middle"
               fontSize={11}
               fontFamily="'JetBrains Mono', monospace"
               fill="var(--state-frontier)"
             >
-              {r.amount}
+              {text}
             </text>
           </g>
         );

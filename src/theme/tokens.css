@@ -797,6 +797,14 @@
 
 
 :root {
+  /*
+   * The palette is light only. Saying so pins the parts the browser paints and
+   * this file does not: select popups, checkboxes, the caret, autofill and the
+   * focus ring. Left undeclared they follow the operating system, so a reader
+   * in dark mode could get a dark widget on a light card.
+   */
+  color-scheme: light;
+
   --bg: #eef1fb;
   --surface: #ffffff;
   --surface-sunken: #f5f7fe;

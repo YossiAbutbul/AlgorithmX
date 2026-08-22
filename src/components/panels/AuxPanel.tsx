@@ -74,7 +74,10 @@ export function AuxPanel({ views, hovered, onHover }: Props) {
               fills ? 'min-h-0 flex-1' : 'flex-none'
             }`}
           >
-            <h4 className="mb-2 flex-none text-(length:--step-2) text-ink-soft">{view.title}</h4>
+            {/* A label for the panel, not a heading competing with the run. */}
+            <h4 className="mb-2 flex-none text-(length:--step-1) font-medium text-ink-soft">
+              {view.title}
+            </h4>
             <div className={fills ? 'flex min-h-0 flex-1 flex-col' : undefined}>
               {renderView(view, hovered, onHover)}
             </div>

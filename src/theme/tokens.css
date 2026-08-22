@@ -267,6 +267,11 @@
     grid-template-columns: 1fr;
     max-height: 62vh;
     overflow-y: auto;
+    direction: ltr;
+
+    & > * {
+      direction: rtl;
+    }
   }
 }
 
@@ -658,10 +663,154 @@
   max-width: min(520px, calc(100vw - 2rem));
 }
 
+/*
+ * Turning the lights. The palette swaps on an attribute, which would cut over
+ * in one frame, so for the length of the switch every painted surface eases
+ * instead. The class is added only by the button, so an ordinary repaint and
+ * the first paint are never caught by it, and a reader who asked for less
+ * motion gets the cut.
+ */
+:root.theme-turning,
+:root.theme-turning *:not(svg):not(svg *) {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease,
+    fill 0.3s ease,
+    stroke 0.3s ease,
+    box-shadow 0.3s ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root.theme-turning,
+  :root.theme-turning *:not(svg):not(svg *) {
+    transition: none !important;
+  }
+}
+
+@utility picker-btn {
+  /* The trigger reads as the small button it replaces. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  min-height: 36px;
+  min-width: 60px;
+  padding: 0 0.5rem 0 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--step-1);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  &[aria-expanded='true'] {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  @media (pointer: coarse), (max-width: 639px) {
+    min-height: var(--tap);
+  }
+}
+
+@utility picker-caret {
+  flex: none;
+  transition: transform 0.24s var(--ease-spring);
+
+  .picker-btn[aria-expanded='true'] & {
+    transform: rotate(180deg);
+  }
+}
+
+@utility picker-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline-start: 0;
+  z-index: 55;
+  min-width: 100%;
+  max-height: 244px;
+  overflow-y: auto;
+  direction: ltr;
+  padding: 4px;
+  margin: 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-pop);
+  transform-origin: top center;
+  animation: pickerIn 0.18s var(--ease-spring) both;
+}
+
+@utility picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 0.6rem;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--ink);
+  font-size: var(--step-1);
+  font-weight: 600;
+  cursor: pointer;
+
+  &[data-active='true'] {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  &[aria-selected='true'] {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  @media (pointer: coarse), (max-width: 639px) {
+    min-height: var(--tap);
+  }
+}
+
+@keyframes pickerIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@utility scroll-y-right {
+  /*
+   * The page reads right to left, which puts a scrollbar on the left of every
+   * box that scrolls. The bar belongs on the right, so the box is flipped and
+   * its contents are flipped back.
+   */
+  direction: ltr;
+
+  & > * {
+    direction: rtl;
+  }
+}
+
 @utility scroll-overlay {
-  /* The page scrollbar is hidden, so a thin one floats over the content. */
+  /* The page scrollbar is hidden, so a thin one floats over the content. It
+     starts below the bar, which is fixed and would otherwise sit on top of it. */
   position: fixed;
-  top: 0;
+  top: var(--header-h);
   bottom: 0;
   right: 0;
   width: 12px;
@@ -1028,8 +1177,9 @@
   }
 
   :focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 2px;
+    /* Enough to find, not enough to shout. Three solid pixels read as an error. */
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
     border-radius: 6px;
   }
 

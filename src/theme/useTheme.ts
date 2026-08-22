@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
-/** What the reader picked. `system` follows the operating system as it changes. */
-export type ThemeChoice = 'system' | 'light' | 'dark';
+/** Two schemes, chosen outright. The first visit takes its lead from the system. */
+export type ThemeChoice = 'light' | 'dark';
 
 export const THEME_KEY = 'algorithmx:theme';
 
@@ -14,24 +14,24 @@ function safeStorage(): Storage | null {
   }
 }
 
-export function loadThemeChoice(): ThemeChoice {
-  const raw = safeStorage()?.getItem(THEME_KEY);
-  return raw === 'light' || raw === 'dark' ? raw : 'system';
-}
-
 function systemPrefersDark(): boolean {
   if (typeof window === 'undefined' || !window.matchMedia) return false;
   return window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
+export function loadThemeChoice(): ThemeChoice {
+  const raw = safeStorage()?.getItem(THEME_KEY);
+  if (raw === 'light' || raw === 'dark') return raw;
+  return systemPrefersDark() ? 'dark' : 'light';
+}
+
 /**
- * Resolves the choice and stamps it on the root. The stylesheet only knows
- * about the attribute, so the operating system's preference and the reader's
- * own choice arrive by the same door and there is one palette to maintain.
+ * Stamps the choice on the root. The stylesheet only knows about the attribute,
+ * so there is one palette to keep true rather than a media query and an
+ * override drifting apart.
  */
 export function applyTheme(choice: ThemeChoice): void {
-  const dark = choice === 'dark' || (choice === 'system' && systemPrefersDark());
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  document.documentElement.dataset.theme = choice;
 }
 
 export function useTheme() {
@@ -42,21 +42,17 @@ export function useTheme() {
     safeStorage()?.setItem(THEME_KEY, choice);
   }, [choice]);
 
-  // Following the system means following it while the page is open
-  useEffect(() => {
-    if (choice !== 'system' || !window.matchMedia) return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => applyTheme('system');
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, [choice]);
-
   const cycle = useCallback(() => {
-    setChoice((c) => (c === 'system' ? 'dark' : c === 'dark' ? 'light' : 'system'));
+    /*
+     * The colours cross fade rather than cutting. The class is what turns the
+     * transition on, so it only ever runs on a deliberate switch and never on
+     * the first paint or on an ordinary repaint.
+     */
+    const root = document.documentElement;
+    root.classList.add('theme-turning');
+    window.setTimeout(() => root.classList.remove('theme-turning'), 340);
+    setChoice((c) => (c === 'dark' ? 'light' : 'dark'));
   }, []);
 
-  const resolved: 'light' | 'dark' =
-    choice === 'system' ? (systemPrefersDark() ? 'dark' : 'light') : choice;
-
-  return { choice, setChoice, cycle, resolved };
+  return { choice, setChoice, cycle, resolved: choice };
 }

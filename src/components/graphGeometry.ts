@@ -29,15 +29,38 @@ const FRAME_MARGIN = 14;
 const TWIN_BEND = 34;
 
 /**
- * How far a residual arc bends off its edge. It is drawn from the edge's head
- * back to its tail, which is the same direction the opposite edge is drawn in,
- * so on a pair of opposite edges the arc bends to the same side as the twin and
- * lands on top of it: measured at 1.3 units apart, running parallel the whole
- * way. When a twin is there the arc goes outside it instead.
+ * The bend a flow edge and its residual arc share, so the two read as a pair.
+ * Shallow on purpose: enough to separate the two directions and no more, since
+ * a deep curve spreads the network out and buys nothing.
+ */
+const FLOW_BEND = 15;
+
+function hasTwin(graph: GraphModel, edge: GraphEdge): boolean {
+  return graph.edges.some((o) => o.from === edge.to && o.to === edge.from);
+}
+
+/**
+ * How far an edge bends off the straight line between its nodes. On a flow
+ * network the forward edge and the residual arc are two directions of the same
+ * thing, so the edge takes the bend its residual will: each is drawn from its
+ * own end, which flips the normal, and the two come out as arcs of equal angle
+ * curving away from each other instead of a straight line with an arc slung
+ * under it.
+ */
+export function edgeBend(graph: GraphModel, edge: GraphEdge): number {
+  if (hasTwin(graph, edge)) return TWIN_BEND;
+  return graph.flow ? FLOW_BEND : 0;
+}
+
+/**
+ * The residual arc's bend. It is drawn from the edge's head back to its tail,
+ * the same direction the opposite edge is drawn in, so on a pair of opposite
+ * edges it would bend to the twin's side and land on it: measured at 1.3 units
+ * apart, running parallel the whole way. With a twin it goes outside instead;
+ * without one it mirrors its own edge.
  */
 export function residualBend(graph: GraphModel, edge: GraphEdge): number {
-  const hasTwin = graph.edges.some((o) => o.from === edge.to && o.to === edge.from);
-  return hasTwin ? TWIN_BEND + 24 : 30;
+  return hasTwin(graph, edge) ? TWIN_BEND + 24 : FLOW_BEND;
 }
 
 export interface Geometry {
@@ -133,13 +156,12 @@ export function nodePositions(graph: GraphModel): Map<NodeId, { x: number; y: nu
 /** Edge paths, shared by the renderer, the badge placement and the framing. */
 export function edgeGeometry(graph: GraphModel): Map<string, Geometry> {
   const pos = nodePositions(graph);
-  const antiParallel = antiParallelEdges(graph);
   const m = new Map<string, Geometry>();
   for (const e of graph.edges) {
     const a = pos.get(e.from);
     const b = pos.get(e.to);
     if (!a || !b) continue;
-    const bend = antiParallel.has(e.id) ? 34 : 0;
+    const bend = edgeBend(graph, e);
     m.set(
       e.id,
       bend

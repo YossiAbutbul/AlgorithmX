@@ -13,7 +13,7 @@ export function ArrayTable({
 }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="scroll-x min-h-0 flex-1 overflow-y-auto">
+      <div className="scroll-y-right scroll-x min-h-0 flex-1 overflow-y-auto">
         <table className="w-full border-collapse text-(length:--step-2)">
           <thead>
             <tr>

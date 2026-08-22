@@ -6,7 +6,7 @@ export function Brand({ onClick }: Props) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center"
+      className="hidden items-center sm:flex"
       aria-label="AlgorithmX, לדף הראשון"
       style={{
         background: 'none',
@@ -25,13 +25,12 @@ export function Brand({ onClick }: Props) {
         style={{ fontFamily: 'Rubik, sans-serif', fontWeight: 600, letterSpacing: '-0.02em', direction: 'ltr' }}
       >
         {/*
-          * On a narrow bar the wordmark drops to its initial. The row never
-          * wraps, so the space it was holding was coming out of the algorithm's
-          * name, which is the one label in the bar that has to be readable.
+          * The whole wordmark steps aside on a narrow bar. The row never wraps,
+          * and the space it held was coming out of the algorithm's name, which
+          * is the one label here that has to stay readable. The switcher beside
+          * it reaches every page the mark linked to.
           */}
-        <span className="hidden sm:inline" style={{ color: 'var(--ink)' }}>
-          Algorithm
-        </span>
+        <span style={{ color: 'var(--ink)' }}>Algorithm</span>
         <span style={{ color: 'var(--accent)' }}>X</span>
       </span>
     </button>

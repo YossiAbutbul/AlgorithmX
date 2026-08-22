@@ -9,9 +9,16 @@ import { AlgorithmPage } from './pages/AlgorithmPage';
 import { ComparisonTablePage } from './pages/ComparisonTablePage';
 import { ComparePage } from './pages/ComparePage';
 import { loadLastTab, saveLastTab } from './graphs/storage';
+import { Moon, Sun } from 'lucide-react';
 import { useTheme } from './theme/useTheme';
 
 const ALL_IDS = [...ALGORITHMS.map((a) => a.id), ...EXTRA_TABS.map((t) => t.id)];
+
+/** The button offers the scheme you are not on, which is what it will do. */
+const THEME_LABEL = {
+  dark: 'עבור לתצוגה בהירה',
+  light: 'עבור לתצוגה כהה',
+} as const;
 
 export function App() {
   const [tab, setTab] = useState<string>(() => {
@@ -86,7 +93,7 @@ export function App() {
             <Brand onClick={() => go(ALGORITHMS[0].id)} />
           </div>
 
-          <AlgorithmSwitcher all={ALGORITHMS} current={tab} onNavigate={go} theme={theme} />
+          <AlgorithmSwitcher all={ALGORITHMS} current={tab} onNavigate={go} />
 
           {current && (
             <nav
@@ -120,6 +127,18 @@ export function App() {
           {!current && <div className="min-w-0 flex-1" />}
 
           <div className="flex flex-none items-center gap-1">
+            <button
+              className="icon-btn"
+              aria-label={THEME_LABEL[theme.choice]}
+              title={THEME_LABEL[theme.choice]}
+              onClick={theme.cycle}
+            >
+              {theme.choice === 'dark' ? (
+                <Sun size={18} aria-hidden="true" />
+              ) : (
+                <Moon size={18} aria-hidden="true" />
+              )}
+            </button>
             {EXTRA_TABS.map((t) => (
               <button
                 key={t.id}

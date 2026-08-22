@@ -1,14 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, GitCompareArrows, Monitor, Moon, Sun, Table2 } from 'lucide-react';
+import { ChevronDown, GitCompareArrows, Table2 } from 'lucide-react';
 import type { AlgorithmModule } from '../algorithms/types';
-import type { ThemeChoice } from '../theme/useTheme';
 
-/** The chip says which scheme is on, and one press moves to the next. */
-const THEME_LABEL: Record<ThemeChoice, string> = {
-  system: 'לפי המערכת',
-  dark: 'כהה',
-  light: 'בהירה',
-};
 
 /**
  * The nine algorithms grouped by the problem they solve. One strip of eleven
@@ -31,10 +24,9 @@ interface Props {
   all: AlgorithmModule[];
   current: string;
   onNavigate: (id: string) => void;
-  theme?: { choice: ThemeChoice; cycle: () => void };
 }
 
-export function AlgorithmSwitcher({ all, current, onNavigate, theme }: Props) {
+export function AlgorithmSwitcher({ all, current, onNavigate }: Props) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -142,25 +134,6 @@ export function AlgorithmSwitcher({ all, current, onNavigate, theme }: Props) {
                   </button>
                 </li>
               ))}
-              {/*
-                * The colour scheme lives here rather than in the bar. It is set
-                * once, and the bar is one row that does not wrap, where a third
-                * icon came out of the algorithm's name on a narrow screen.
-                */}
-              {theme && (
-                <li className="ms-auto">
-                  <button role="menuitem" className="chip" onClick={theme.cycle}>
-                    {theme.choice === 'system' ? (
-                      <Monitor size={14} aria-hidden="true" />
-                    ) : theme.choice === 'dark' ? (
-                      <Moon size={14} aria-hidden="true" />
-                    ) : (
-                      <Sun size={14} aria-hidden="true" />
-                    )}
-                    {THEME_LABEL[theme.choice]}
-                  </button>
-                </li>
-              )}
             </ul>
           </div>
         </div>

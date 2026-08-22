@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Eye, GitCompareArrows, Network, Pencil, TriangleAlert, X } from 'lucide-react';
 import type { AlgorithmModule, GraphModel, NodeId, NodeState } from '../algorithms/types';
@@ -6,6 +6,7 @@ import { validateGraph } from '../algorithms/validate';
 import { AuxPanel } from './panels/AuxPanel';
 import { EVENT_INK, EVENT_LABEL } from './events';
 import { GraphCanvas } from './GraphCanvas';
+import { NodePicker } from './NodePicker';
 import { graphAspect } from './graphGeometry';
 import { EditorRail } from './editor/EditorRail';
 import { EditorTools } from './editor/EditorTools';
@@ -23,13 +24,6 @@ interface Props {
 }
 
 export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
-  const pickedByPointer = useRef(false);
-  const releaseAfterPointer = (el: HTMLElement) => {
-    if (!pickedByPointer.current) return;
-    pickedByPointer.current = false;
-    el.blur();
-  };
-
   const [presetId, setPresetId] = useState(module.presetGraphs[0].id);
   const [custom, setCustom] = useState<GraphModel | null>(() => loadCustomGraph(module.id));
   const [editing, setEditing] = useState(false);
@@ -201,22 +195,12 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
             <span className="text-ink-faint" style={{ fontSize: 'var(--step-1)', fontWeight: 500 }}>
               מקור
             </span>
-            <select
-              className="btn btn-sm num"
-              value={source ?? ''}
-              onPointerDown={() => (pickedByPointer.current = true)}
-              onChange={(e) => {
-                setSource(e.target.value);
-                releaseAfterPointer(e.currentTarget);
-              }}
-              aria-label="צומת מקור"
-            >
-              {graph.nodes.map((n) => (
-                <option key={n.id} value={n.id}>
-                  {n.id}
-                </option>
-              ))}
-            </select>
+            <NodePicker
+              label="צומת מקור"
+              value={source}
+              options={graph.nodes.map((n) => n.id)}
+              onChange={setSource}
+            />
           </label>
         )}
         {module.needsSink && (
@@ -224,22 +208,12 @@ export function RunPanel({ module, onGoToCompare, onNavigate }: Props) {
             <span className="text-ink-faint" style={{ fontSize: 'var(--step-1)', fontWeight: 500 }}>
               בור
             </span>
-            <select
-              className="btn btn-sm num"
-              value={sink ?? ''}
-              onPointerDown={() => (pickedByPointer.current = true)}
-              onChange={(e) => {
-                setSink(e.target.value);
-                releaseAfterPointer(e.currentTarget);
-              }}
-              aria-label="צומת בור"
-            >
-              {graph.nodes.map((n) => (
-                <option key={n.id} value={n.id}>
-                  {n.id}
-                </option>
-              ))}
-            </select>
+            <NodePicker
+              label="צומת בור"
+              value={sink}
+              options={graph.nodes.map((n) => n.id)}
+              onChange={setSink}
+            />
           </label>
         )}
 

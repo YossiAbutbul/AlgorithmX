@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react';
 import type { AlgorithmModule, NodeId } from '../../algorithms/types';
 import { edgeLabel } from '../../algorithms/engine';
 import type { GraphDraft } from './useGraphDraft';
+import { NodePicker } from '../NodePicker';
 
 interface Props {
   module: AlgorithmModule;
@@ -41,7 +42,7 @@ export function EditorRail({ module, draft, source, sink, onSource, onSink }: Pr
     const touching = graph.edges.filter((e) => e.from === node.id || e.to === node.id);
 
     return (
-      <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto">
+      <div className="scroll-y-right flex h-full min-h-0 flex-col gap-3 overflow-y-auto">
         <Title>צומת {node.id}</Title>
         <section className="card-quiet flex flex-col gap-1.5 p-3">
           <Row label="מיקום" value={`${node.x}, ${node.y}`} />
@@ -85,7 +86,7 @@ export function EditorRail({ module, draft, source, sink, onSource, onSink }: Pr
     if (!edge) return null;
 
     return (
-      <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto">
+      <div className="scroll-y-right flex h-full min-h-0 flex-col gap-3 overflow-y-auto">
         <Title>
           צלע <span className="num">{edgeLabel(graph, edge)}</span>
         </Title>
@@ -131,7 +132,7 @@ export function EditorRail({ module, draft, source, sink, onSource, onSink }: Pr
   );
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto">
+    <div className="scroll-y-right flex h-full min-h-0 flex-col gap-3 overflow-y-auto">
       <Title>הגרף</Title>
       <section className="card-quiet flex flex-col gap-1.5 p-3">
         <Row label="צמתים" value={String(graph.nodes.length)} />
@@ -147,33 +148,23 @@ export function EditorRail({ module, draft, source, sink, onSource, onSink }: Pr
             {module.needsSource && (
               <label className="flex items-center justify-between gap-2 text-(length:--step-1)">
                 <span className="text-ink-soft">מקור</span>
-                <select
-                  className="btn btn-sm num"
-                  value={source ?? ''}
-                  onChange={(e) => onSource(e.target.value)}
-                >
-                  {graph.nodes.map((n) => (
-                    <option key={n.id} value={n.id}>
-                      {n.id}
-                    </option>
-                  ))}
-                </select>
+                <NodePicker
+                  label="מקור"
+                  value={source}
+                  options={graph.nodes.map((n) => n.id)}
+                  onChange={onSource}
+                />
               </label>
             )}
             {module.needsSink && (
               <label className="flex items-center justify-between gap-2 text-(length:--step-1)">
                 <span className="text-ink-soft">בור</span>
-                <select
-                  className="btn btn-sm num"
-                  value={sink ?? ''}
-                  onChange={(e) => onSink(e.target.value)}
-                >
-                  {graph.nodes.map((n) => (
-                    <option key={n.id} value={n.id}>
-                      {n.id}
-                    </option>
-                  ))}
-                </select>
+                <NodePicker
+                  label="בור"
+                  value={sink}
+                  options={graph.nodes.map((n) => n.id)}
+                  onChange={onSink}
+                />
               </label>
             )}
           </section>

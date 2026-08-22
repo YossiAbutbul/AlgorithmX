@@ -58,7 +58,7 @@ export function AlgorithmSwitcher({ all, current, onNavigate }: Props) {
   }
 
   return (
-    <div ref={wrapRef} className="relative flex-none">
+    <div ref={wrapRef} className="relative min-w-0 shrink">
       <button
         ref={btnRef}
         className="switcher-btn"
@@ -66,7 +66,7 @@ export function AlgorithmSwitcher({ all, current, onNavigate }: Props) {
         aria-haspopup="menu"
         onClick={() => setOpen((v) => !v)}
       >
-        <span className="num">{active ? active.shortHe : (extra?.label ?? 'בחר')}</span>
+        <span className="num truncate">{active ? active.shortHe : (extra?.label ?? 'בחר')}</span>
         {active && (
           <span className="hidden font-normal text-ink-soft sm:inline" style={{ fontSize: 'var(--step-1)' }}>
             {active.titleHe.split(':')[1]?.trim() ?? ''}

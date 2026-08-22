@@ -21,7 +21,14 @@ export function Brand({ onClick }: Props) {
         className="text-[1.15rem] leading-none sm:text-[1.35rem]"
         style={{ fontFamily: 'Rubik, sans-serif', fontWeight: 600, letterSpacing: '-0.02em', direction: 'ltr' }}
       >
-        <span style={{ color: 'var(--ink)' }}>Algorithm</span>
+        {/*
+          * On a narrow bar the wordmark drops to its initial. The row never
+          * wraps, so the space it was holding was coming out of the algorithm's
+          * name, which is the one label in the bar that has to be readable.
+          */}
+        <span className="hidden sm:inline" style={{ color: 'var(--ink)' }}>
+          Algorithm
+        </span>
         <span style={{ color: 'var(--accent)' }}>X</span>
       </span>
     </button>

@@ -248,6 +248,9 @@ export function labelHalfWidth(text: string): number {
 /** Where along an edge a label may sit, tried in this order. */
 const LABEL_STOPS = [0.5, 0.38, 0.62, 0.3, 0.7, 0.24, 0.76];
 
+/** How far a label may step off its own line when sliding along it is not enough. */
+const LABEL_LIFTS = [0, 16, -16];
+
 /** Past this much daylight a spot is clear enough, so the middle keeps the label. */
 const COMFORT = 5;
 
@@ -291,18 +294,34 @@ export function placeLabel(
 
   for (const t of LABEL_STOPS) {
     const at = geo.pointAt(t);
-    const box: PlacedLabel = { x: at.x, y: at.y, halfW, halfH: LABEL_HALF_H };
-    let gap = Infinity;
-    for (const o of obstacles) {
-      gap = Math.min(gap, boxGap(box, o));
-      if (gap <= bestGap) break;
+    // The curve's own direction, so a lift is square to the line it labels
+    const a = geo.pointAt(Math.max(0, t - 0.02));
+    const b = geo.pointAt(Math.min(1, t + 0.02));
+    const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    const nx = -(b.y - a.y) / len;
+    const ny = (b.x - a.x) / len;
+
+    for (const lift of LABEL_LIFTS) {
+      const box: PlacedLabel = {
+        x: at.x + nx * lift,
+        y: at.y + ny * lift,
+        halfW,
+        halfH: LABEL_HALF_H,
+      };
+      let gap = Infinity;
+      for (const o of obstacles) {
+        gap = Math.min(gap, boxGap(box, o));
+        if (gap <= bestGap) break;
+      }
+      // Sitting on its own line is what a label is for, so a lift has to earn it
+      const score = lift === 0 ? gap : gap - 2;
+      if (score > bestGap) {
+        bestGap = score;
+        best = box;
+      }
     }
-    if (gap > bestGap) {
-      bestGap = gap;
-      best = box;
-      // The midpoint is the natural home, so stop as soon as one is clear
-      if (gap >= COMFORT) break;
-    }
+    // The midpoint is the natural home, so stop as soon as one is clear
+    if (bestGap >= COMFORT) break;
   }
 
   return best ?? { ...geo.pointAt(0.5), halfW, halfH: LABEL_HALF_H };

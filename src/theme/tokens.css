@@ -186,10 +186,19 @@
 }
 
 @utility switcher-btn {
+  /*
+   * The bar is one row that never wraps, and everything beside this button is
+   * a fixed size, so a long name here pushed the trailing icons off the window:
+   * Floyd-Warshall left them at -26px on a 380px screen with nothing to scroll.
+   * The name gives way instead, down to a floor that still reads.
+   */
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   min-height: 40px;
   padding: 0 0.75rem;
   border-radius: var(--radius-sm);

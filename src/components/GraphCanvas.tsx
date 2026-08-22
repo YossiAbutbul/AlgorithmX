@@ -21,6 +21,7 @@ import {
   markOffset,
   nodeAnchors,
   nodePositions,
+  residualBend,
 } from './graphGeometry';
 
 interface NodeStyle {
@@ -194,7 +195,7 @@ export function GraphCanvas({
       const a = pos.get(e?.to ?? '');
       const b = pos.get(e?.from ?? '');
       if (!e || !a || !b) continue;
-      const geo = curvedGeometry(a.x, a.y, b.x, b.y, 30, true);
+      const geo = curvedGeometry(a.x, a.y, b.x, b.y, residualBend(graph, e), true);
       const at = placeLabel(geo, labelHalfWidth(String(r.amount)), obstacles);
       obstacles.push(at);
       out.set(r.id, { geo, at });

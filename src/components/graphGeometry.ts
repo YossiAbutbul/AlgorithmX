@@ -1,4 +1,4 @@
-import type { GraphModel, NodeId } from '../algorithms/types';
+import type { GraphEdge, GraphModel, NodeId } from '../algorithms/types';
 
 /** Node radius, in graph units. Everything else is measured off it. */
 export const R = 26;
@@ -24,6 +24,21 @@ export function markOffset(markR: number): number {
 
 /** Breathing room between the outermost mark and the edge of the frame. */
 const FRAME_MARGIN = 14;
+
+/** How far apart a pair of opposite edges is pushed so both stay readable. */
+const TWIN_BEND = 34;
+
+/**
+ * How far a residual arc bends off its edge. It is drawn from the edge's head
+ * back to its tail, which is the same direction the opposite edge is drawn in,
+ * so on a pair of opposite edges the arc bends to the same side as the twin and
+ * lands on top of it: measured at 1.3 units apart, running parallel the whole
+ * way. When a twin is there the arc goes outside it instead.
+ */
+export function residualBend(graph: GraphModel, edge: GraphEdge): number {
+  const hasTwin = graph.edges.some((o) => o.from === edge.to && o.to === edge.from);
+  return hasTwin ? TWIN_BEND + 24 : 30;
+}
 
 export interface Geometry {
   path: string;
@@ -375,6 +390,25 @@ export function graphView(graph: GraphModel): GraphView {
   if (graph.weighted || graph.flow) {
     for (const at of edgeLabelSpots(graph, edgeGeo).values()) {
       grow(at.x, at.y, at.halfW, at.halfH);
+    }
+  }
+
+  if (graph.flow) {
+    /*
+     * Residual arcs arrive with the frame rather than with the graph, and they
+     * bend outside their edge. Reserving their room up front keeps the frame
+     * still through a run instead of resizing the moment flow appears.
+     */
+    const pos = nodePositions(graph);
+    for (const e of graph.edges) {
+      const a = pos.get(e.to);
+      const b = pos.get(e.from);
+      if (!a || !b) continue;
+      const arc = curvedGeometry(a.x, a.y, b.x, b.y, residualBend(graph, e), true);
+      for (let i = 0; i <= 8; i += 1) {
+        const p = arc.pointAt(i / 8);
+        grow(p.x, p.y, 4, 4);
+      }
     }
   }
 

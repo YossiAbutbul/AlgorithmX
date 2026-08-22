@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import type { NodeId } from '../algorithms/types';
 
@@ -21,15 +22,38 @@ interface Props {
 export function NodePicker({ value, options, onChange, label, block = false }: Props) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
+  const [at, setAt] = useState<{ left: number; top: number; width: number } | null>(null);
   const wrap = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const id = useId();
+
+  /*
+   * The list is rendered on the body rather than beside the button. The toolbar
+   * this sits in scrolls sideways and carries a fade mask, and either one traps
+   * an absolutely positioned child: the list opened at the right place and was
+   * cut down to the one row that fitted inside the bar.
+   */
+  useLayoutEffect(() => {
+    if (!open) return;
+    const place = () => {
+      const r = wrap.current?.getBoundingClientRect();
+      if (r) setAt({ left: r.left, top: r.bottom + 6, width: r.width });
+    };
+    place();
+    window.addEventListener('scroll', place, true);
+    window.addEventListener('resize', place);
+    return () => {
+      window.removeEventListener('scroll', place, true);
+      window.removeEventListener('resize', place);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
     setActive(Math.max(0, options.indexOf(value ?? options[0])));
     const onDown = (e: MouseEvent) => {
-      if (!wrap.current?.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (!wrap.current?.contains(t) && !listRef.current?.contains(t)) setOpen(false);
     };
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
@@ -92,33 +116,37 @@ export function NodePicker({ value, options, onChange, label, block = false }: P
         <ChevronDown size={14} aria-hidden="true" className="picker-caret" />
       </button>
 
-      {open && (
-        <ul
-          ref={listRef}
-          id={id}
-          role="listbox"
-          aria-label={label}
-          tabIndex={-1}
-          className="picker-list"
-          onKeyDown={onKey}
-        >
-          {options.map((o, i) => (
-            <li key={o}>
-              <button
-                type="button"
-                role="option"
-                aria-selected={o === value}
-                data-active={i === active}
-                className="picker-item num"
-                onMouseEnter={() => setActive(i)}
-                onClick={() => commit(i)}
-              >
-                {o}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      {open &&
+        at &&
+        createPortal(
+          <ul
+            ref={listRef}
+            id={id}
+            role="listbox"
+            aria-label={label}
+            tabIndex={-1}
+            className="picker-list"
+            style={{ left: at.left, top: at.top, minWidth: at.width }}
+            onKeyDown={onKey}
+          >
+            {options.map((o, i) => (
+              <li key={o}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={o === value}
+                  data-active={i === active}
+                  className="picker-item num"
+                  onMouseEnter={() => setActive(i)}
+                  onClick={() => commit(i)}
+                >
+                  {o}
+                </button>
+              </li>
+            ))}
+          </ul>,
+          document.body,
+        )}
     </div>
   );
 }

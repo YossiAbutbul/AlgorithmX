@@ -9,6 +9,7 @@ import type {
   NodeState,
 } from '../algorithms/types';
 import {
+  ARROW,
   MARK_R,
   R,
   curvedGeometry,
@@ -18,6 +19,7 @@ import {
   graphView,
   labelHalfWidth,
   placeLabel,
+  verticalRuleObstacles,
   markOffset,
   nodeAnchors,
   nodePositions,
@@ -84,10 +86,11 @@ interface EdgeStyle {
 const EDGE_STYLES: Record<EdgeState, EdgeStyle> = {
   idle: { stroke: 'var(--state-idle-line)', width: 2 },
   considered: { stroke: 'var(--state-current)', width: 3, dash: '6 5' },
-  tree: { stroke: 'var(--state-done)', width: 5 },
+  tree: { stroke: 'var(--state-done)', width: 4 },
   rejected: { stroke: 'var(--state-rejected)', width: 2, dash: '3 6', opacity: 0.75 },
-  relaxed: { stroke: 'var(--state-current)', width: 4.5 },
-  saturated: { stroke: 'var(--state-done)', width: 6 },
+  relaxed: { stroke: 'var(--state-current)', width: 3.5 },
+  /* Weight enough to read as settled, without the line becoming the drawing. */
+  saturated: { stroke: 'var(--state-done)', width: 4 },
   residual: { stroke: 'var(--state-frontier)', width: 3, dash: '7 5' },
 };
 
@@ -172,6 +175,29 @@ export function GraphCanvas({
   const edgeGeo = useMemo(() => edgeGeometry(graph), [graph]);
   const anchors = useMemo(() => nodeAnchors(graph, edgeGeo), [graph, edgeGeo]);
   /** What each edge actually prints, so its label is measured and not guessed. */
+  const view = useMemo(() => graphView(graph), [graph]);
+
+  /** A connection being dragged off a node's rim handle. */
+  const [linkDrag, setLinkDrag] = useState<{ from: NodeId; x: number; y: number } | null>(null);
+  /** Where the cursor is, so a pending connection can follow it. */
+  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+  const [hoverEdge, setHoverEdge] = useState<EdgeId | null>(null);
+
+  const edgeState = (e: GraphEdge): EdgeState => frame?.edgeStates[e.id] ?? 'idle';
+  const nodeState = (id: NodeId): NodeState => frame?.nodeStates[id] ?? 'idle';
+
+  const cutLine = useMemo(() => {
+    if (!frame?.cutNodes || frame.cutNodes.length === 0) return null;
+    const inSet = new Set(frame.cutNodes);
+    const left = graph.nodes.filter((n) => inSet.has(n.id));
+    const right = graph.nodes.filter((n) => !inSet.has(n.id));
+    if (left.length === 0 || right.length === 0) return null;
+    const maxLeft = Math.max(...left.map((n) => n.x));
+    const minRight = Math.min(...right.map((n) => n.x));
+    if (minRight - maxLeft < 40) return null;
+    return (maxLeft + minRight) / 2;
+  }, [frame, graph]);
+
   const edgeLabelText = useMemo(() => {
     const m = new Map<EdgeId, string>();
     for (const e of graph.edges) {
@@ -182,8 +208,15 @@ export function GraphCanvas({
 
   /** Weight and flow labels, slid clear of crossings and of each other. */
   const labelSpot = useMemo(
-    () => edgeLabelSpots(graph, edgeGeo, (id) => labelHalfWidth(edgeLabelText.get(id) ?? '')),
-    [graph, edgeGeo, edgeLabelText],
+    () =>
+      edgeLabelSpots(
+        graph,
+        edgeGeo,
+        (id) => labelHalfWidth(edgeLabelText.get(id) ?? ''),
+        // The cut's rule crosses the network, and three labels were sitting on it
+        cutLine === null ? [] : verticalRuleObstacles(cutLine, view.y, view.y + view.h),
+      ),
+    [graph, edgeGeo, edgeLabelText, cutLine, view],
   );
 
   /**
@@ -221,28 +254,6 @@ export function GraphCanvas({
   }, [frame, graph, edgeGeo, labelSpot, pos]);
 
   /** The frame is fitted to what is drawn, not to the authored canvas. */
-  const view = useMemo(() => graphView(graph), [graph]);
-
-  /** A connection being dragged off a node's rim handle. */
-  const [linkDrag, setLinkDrag] = useState<{ from: NodeId; x: number; y: number } | null>(null);
-  /** Where the cursor is, so a pending connection can follow it. */
-  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
-  const [hoverEdge, setHoverEdge] = useState<EdgeId | null>(null);
-
-  const edgeState = (e: GraphEdge): EdgeState => frame?.edgeStates[e.id] ?? 'idle';
-  const nodeState = (id: NodeId): NodeState => frame?.nodeStates[id] ?? 'idle';
-
-  const cutLine = useMemo(() => {
-    if (!frame?.cutNodes || frame.cutNodes.length === 0) return null;
-    const inSet = new Set(frame.cutNodes);
-    const left = graph.nodes.filter((n) => inSet.has(n.id));
-    const right = graph.nodes.filter((n) => !inSet.has(n.id));
-    if (left.length === 0 || right.length === 0) return null;
-    const maxLeft = Math.max(...left.map((n) => n.x));
-    const minRight = Math.min(...right.map((n) => n.x));
-    if (minRight - maxLeft < 40) return null;
-    return (maxLeft + minRight) / 2;
-  }, [frame, graph]);
 
   /**
    * Client pixels to graph units. The svg meets its box rather than filling it,
@@ -371,12 +382,13 @@ export function GraphCanvas({
             key={s}
             id={markerIdFor(s)}
             viewBox="0 0 10 10"
-            refX="8"
+            /* The head begins where the line stops, so nothing shows through it */
+            refX="0"
             refY="5"
-            markerWidth="11"
-            markerHeight="11"
+            markerWidth={ARROW}
+            markerHeight={ARROW}
             markerUnits="userSpaceOnUse"
-            orient="auto-start-reverse"
+            orient="auto"
           >
             <path d="M 0 0 L 10 5 L 0 10 z" fill={EDGE_STYLES[s].stroke} />
           </marker>
@@ -475,7 +487,13 @@ export function GraphCanvas({
               stroke={style.stroke}
               strokeWidth={style.width}
               strokeDasharray={style.dash}
-              strokeLinecap="round"
+              /*
+               * A round cap on a thick line leaves half a disc past the end of
+               * the path, which sits behind the arrowhead and reads as a dot on
+               * the tip. Directed edges finish flat and let the marker be the
+               * point; undirected ones have no marker and keep the round end.
+               */
+              strokeLinecap={graph.directed ? 'butt' : 'round'}
               opacity={style.opacity ?? 1}
               markerEnd={graph.directed ? `url(#${markerIdFor(st)})` : undefined}
               className={
@@ -540,6 +558,7 @@ export function GraphCanvas({
               stroke="var(--state-frontier)"
               strokeWidth={r.active ? 3.5 : 2}
               strokeDasharray="7 5"
+              strokeLinecap="butt"
               markerEnd={`url(#${markerIdFor('residual')})`}
             />
             {/* A capsule, so the amount stays readable where an arc runs under it */}

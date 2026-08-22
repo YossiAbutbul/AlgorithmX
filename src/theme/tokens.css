@@ -733,11 +733,9 @@
 }
 
 @utility picker-list {
-  position: absolute;
-  top: calc(100% + 6px);
-  inset-inline-start: 0;
-  z-index: 55;
-  min-width: 100%;
+  /* Placed on the body, so it is measured from the window and clipped by nothing. */
+  position: fixed;
+  z-index: 70;
   max-height: 244px;
   overflow-y: auto;
   direction: ltr;

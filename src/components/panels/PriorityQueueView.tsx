@@ -11,7 +11,12 @@ export function PriorityQueueView({
 }) {
   return (
     <div>
-      <div className="flex min-h-[42px] flex-wrap gap-1.5">
+      {/*
+        * The queue is a reference you glance at, not the subject of the panel,
+        * so an entry is a tight chip rather than a button sized block. The head
+        * still carries the frontier colour, which is what marks it out.
+        */}
+      <div className="flex min-h-[30px] flex-wrap gap-1">
         {view.items.length === 0 && (
           <span className="text-(length:--step-1) text-ink-soft">התור ריק</span>
         )}
@@ -20,14 +25,15 @@ export function PriorityQueueView({
             key={`${it.id}-${i}`}
             onMouseEnter={() => onHover?.(it.id)}
             onMouseLeave={() => onHover?.(null)}
-            className="item-in num rounded-lg border px-2.5 py-1 text-(length:--step-2)"
+            className="item-in num inline-flex items-baseline gap-px rounded-md border px-1.5 py-px text-(length:--step-1) leading-5"
             style={{
               borderColor: i === 0 ? 'var(--state-frontier)' : 'var(--line)',
               background: i === 0 ? 'var(--state-frontier-fill)' : 'var(--surface)',
             }}
           >
             <b>{it.id}</b>
-            <span className="text-ink-soft"> : {it.key === null ? 'INF' : it.key}</span>
+            {/* The colon stays: without it A with key 2 reads as the number 12. */}
+            <span className="text-ink-faint">:{it.key === null ? 'INF' : it.key}</span>
           </span>
         ))}
       </div>

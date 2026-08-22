@@ -3,6 +3,14 @@ import type { GraphEdge, GraphModel, NodeId } from '../algorithms/types';
 /** Node radius, in graph units. Everything else is measured off it. */
 export const R = 26;
 
+/**
+ * The arrowhead's length. A directed edge stops this far short of where it
+ * would otherwise end, so the head sits on the end of the line rather than on
+ * top of it: drawn over the stroke, the line's own end showed through on either
+ * side of the taper as a notch behind the point.
+ */
+export const ARROW = 11;
+
 /** How far a distance badge sits from the centre of its node. */
 const BADGE_DIST = R + 15;
 
@@ -83,7 +91,7 @@ export function straightGeometry(
   const len = Math.hypot(dx, dy) || 1;
   const ux = dx / len;
   const uy = dy / len;
-  const gapEnd = directed ? R + 9 : R + 2;
+  const gapEnd = directed ? R + ARROW + 2 : R + 2;
   const sx = ax + ux * (R + 2);
   const sy = ay + uy * (R + 2);
   const ex = bx - ux * gapEnd;
@@ -118,7 +126,7 @@ export function curvedGeometry(
   const sx = ax + ((cx - ax) / toStart) * (R + 2);
   const sy = ay + ((cy - ay) / toStart) * (R + 2);
   const toEnd = Math.hypot(cx - bx, cy - by) || 1;
-  const gapEnd = directed ? R + 9 : R + 2;
+  const gapEnd = directed ? R + ARROW + 2 : R + 2;
   const ex = bx + ((cx - bx) / toEnd) * gapEnd;
   const ey = by + ((cy - by) / toEnd) * gapEnd;
 
@@ -268,10 +276,10 @@ export function labelHalfWidth(text: string): number {
 }
 
 /** Where along an edge a label may sit, tried in this order. */
-const LABEL_STOPS = [0.5, 0.38, 0.62, 0.3, 0.7, 0.24, 0.76];
+const LABEL_STOPS = [0.5, 0.4, 0.6, 0.32, 0.68, 0.24, 0.76, 0.17, 0.83];
 
 /** How far a label may step off its own line when sliding along it is not enough. */
-const LABEL_LIFTS = [0, 16, -16];
+const LABEL_LIFTS = [0, 15, -15, 27, -27];
 
 /** Past this much daylight a spot is clear enough, so the middle keeps the label. */
 const COMFORT = 5;
@@ -359,6 +367,8 @@ export function edgeLabelSpots(
   graph: GraphModel,
   edgeGeo: Map<string, Geometry>,
   halfWidthOf?: (edgeId: string) => number,
+  /** Anything else already on the canvas, such as the minimum cut's line. */
+  extra: PlacedLabel[] = [],
 ): Map<string, PlacedLabel> {
   const spots = new Map<string, PlacedLabel>();
   const nodes: PlacedLabel[] = graph.nodes.map((n) => ({
@@ -375,7 +385,7 @@ export function edgeLabelSpots(
     const geo = edgeGeo.get(e.id);
     if (!geo) continue;
 
-    const obstacles: PlacedLabel[] = [...nodes, ...spots.values()];
+    const obstacles: PlacedLabel[] = [...nodes, ...extra, ...spots.values()];
     for (const [id, pts] of samples) {
       if (id === e.id) continue;
       obstacles.push(...pts);
@@ -385,6 +395,13 @@ export function edgeLabelSpots(
     spots.set(e.id, placeLabel(geo, halfW, obstacles));
   }
   return spots;
+}
+
+/** The minimum cut's rule, as obstacles a label can be placed away from. */
+export function verticalRuleObstacles(x: number, top: number, bottom: number): PlacedLabel[] {
+  const out: PlacedLabel[] = [];
+  for (let y = top; y <= bottom; y += 12) out.push({ x, y, halfW: 2, halfH: 6 });
+  return out;
 }
 
 export interface GraphView {

@@ -1253,7 +1253,7 @@
 
 /* A value that just changed lands with a small pop. */
 .pop-in {
-  animation: valuePop 0.34s var(--ease-spring) both;
+  animation: valuePop 0.45s var(--ease-spring) both;
 }
 
 @keyframes valuePop {
@@ -1292,7 +1292,8 @@
 }
 
 .edge-flow {
-  animation: dashFlow 0.9s linear infinite;
+  /* Slow enough to follow along the line rather than shimmer on it. */
+  animation: dashFlow 1.5s linear infinite;
 }
 
 /* A newly chosen tree edge draws itself from the parent outward. */
@@ -1306,7 +1307,40 @@
 }
 
 .edge-draw {
-  animation: edgeDraw 0.42s var(--ease-out) both;
+  /* The fill travels the pipe, so it wants the length of a breath, not a blink. */
+  animation: edgeDraw 0.75s var(--ease-out) both;
+}
+
+/*
+ * A residual arc appears the moment an edge first carries flow. It used to snap
+ * in at full strength beside the edge it belongs to; now it arrives after the
+ * edge has drawn, and the one being pushed through marches slowly backwards to
+ * show which way the flow is being returned.
+ */
+.residual-in {
+  animation: residualIn 0.55s var(--ease-out) 0.15s both;
+}
+
+@keyframes residualIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    /* Not inherit: svg multiplies this by the group's own opacity, and taking
+       the group's value here dimmed a quiet arc twice, to 0.3 instead of 0.55. */
+    opacity: 1;
+  }
+}
+
+@keyframes residualFlow {
+  to {
+    /* Two whole dashes, so the loop closes without a jump */
+    stroke-dashoffset: 24;
+  }
+}
+
+.residual-flow {
+  animation: residualFlow 1.8s linear infinite;
 }
 
 /* Items entering a queue, stack or set slide in from the tail. */

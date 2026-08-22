@@ -553,6 +553,7 @@ export function GraphCanvas({
         return (
           <g key={`res-${r.id}`} opacity={r.active ? 1 : 0.55}>
             <path
+              className={r.active ? 'residual-in residual-flow' : 'residual-in'}
               d={geo.path}
               fill="none"
               stroke="var(--state-frontier)"

@@ -97,14 +97,14 @@
 @utility btn-primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 700;
   box-shadow: 0 8px 18px -10px rgba(91, 63, 209, 0.9);
 
   &:hover:not(:disabled) {
     background: var(--accent-strong);
     border-color: var(--accent-strong);
-    color: #fff;
+    color: var(--on-accent);
   }
 }
 
@@ -164,14 +164,14 @@
   &[data-active='true'] {
     background: var(--accent);
     border-color: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
     font-weight: 700;
   }
 
   &[data-active='true']:hover {
     background: var(--accent-strong);
     border-color: var(--accent-strong);
-    color: #fff;
+    color: var(--on-accent);
   }
 }
 
@@ -513,13 +513,13 @@
 }
 
 @utility btn-danger {
-  border-color: #f0b6c0;
-  background: #fff5f7;
-  color: #b32540;
+  border-color: var(--danger-line);
+  background: var(--danger-fill);
+  color: var(--danger);
 
   &:hover:not(:disabled) {
-    background: #ffe9ee;
-    border-color: #e59aa8;
+    background: var(--danger-fill-hover);
+    border-color: var(--danger-line-hover);
   }
 }
 
@@ -591,7 +591,7 @@
   font-weight: 700;
   padding: 0.18rem 0.5rem;
   border-radius: 999px;
-  color: #fff;
+  color: var(--on-accent);
   letter-spacing: 0.02em;
 }
 
@@ -679,7 +679,7 @@
   right: 3px;
   width: 4px;
   border-radius: 999px;
-  background: #b3bcdd;
+  background: var(--scroll-thumb);
   pointer-events: auto;
   cursor: grab;
   transition:
@@ -690,13 +690,13 @@
   &:hover {
     width: 7px;
     right: 2px;
-    background: #7f8bb8;
+    background: var(--scroll-thumb-hover);
   }
 
   &[data-dragging='true'] {
     width: 7px;
     right: 2px;
-    background: #7f8bb8;
+    background: var(--scroll-thumb-hover);
   }
 
   &[data-dragging='true'] {
@@ -798,10 +798,10 @@
 
 :root {
   /*
-   * The palette is light only. Saying so pins the parts the browser paints and
-   * this file does not: select popups, checkboxes, the caret, autofill and the
-   * focus ring. Left undeclared they follow the operating system, so a reader
-   * in dark mode could get a dark widget on a light card.
+   * Declaring the scheme pins the parts the browser paints and this file does
+   * not: select popups, checkboxes, the caret, autofill and the focus ring.
+   * Left undeclared they follow the operating system, so a reader could get a
+   * dark widget on a light card or the reverse.
    */
   color-scheme: light;
 
@@ -824,6 +824,24 @@
   --state-done: #0e9a86;
   --state-done-fill: #d5f4ee;
   --state-idle-line: #c2cbe9;
+
+  /* A node or edge the run looked at and turned down, and a step that changed nothing. */
+  --state-rejected: #98a1c0;
+  --state-rejected-fill: #eef0f7;
+  --state-quiet: #b7bfda;
+
+  /* What reads on top of a filled accent: a primary button, an event chip. */
+  --on-accent: #ffffff;
+
+  /* Destructive actions in the editor. */
+  --danger: #b32540;
+  --danger-fill: #fff5f7;
+  --danger-fill-hover: #ffe9ee;
+  --danger-line: #f0b6c0;
+  --danger-line-hover: #e59aa8;
+
+  --scroll-thumb: #b3bcdd;
+  --scroll-thumb-hover: #7f8bb8;
 
   --radius: 14px;
   --radius-sm: 10px;
@@ -854,6 +872,60 @@
 
   --ease-spring: cubic-bezier(0.34, 1.28, 0.42, 1);
   --ease-out: cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+/*
+ * The dark palette. One block, not two: the theme is resolved in script and
+ * stamped on the root as an attribute, whether it came from the operating
+ * system or from the reader's own choice, so there is a single set of values
+ * to keep true rather than a media query and an override drifting apart.
+ *
+ * The neutrals carry a little of the accent's indigo rather than being flat
+ * grey, and the state colours are lifted and desaturated: the amber, red and
+ * teal that read on white are too dark and too loud on a dark card.
+ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0c0e1c;
+  --surface: #161a2d;
+  --surface-sunken: #121527;
+  --ink: #e9ebf7;
+  --ink-soft: #a3abd0;
+  --ink-faint: #7a82a8;
+  --line: #2a2f4c;
+  --line-soft: #21253f;
+  --accent: #9b87f5;
+  --accent-strong: #b6a6ff;
+  --accent-soft: #262147;
+
+  --state-frontier: #efa93f;
+  --state-frontier-fill: #3a2c11;
+  --state-current: #f4677f;
+  --state-current-fill: #3d1a25;
+  --state-done: #3ecfae;
+  --state-done-fill: #0f3a33;
+  --state-idle-line: #414a70;
+
+  --state-rejected: #6f7799;
+  --state-rejected-fill: #232740;
+  --state-quiet: #495173;
+
+  /* The accent is light here, so what sits on it is the dark ground, not white. */
+  --on-accent: #15182b;
+
+  --danger: #ff92a5;
+  --danger-fill: #38191f;
+  --danger-fill-hover: #4a2029;
+  --danger-line: #5d2a34;
+  --danger-line-hover: #7c3743;
+
+  --scroll-thumb: #363c5c;
+  --scroll-thumb-hover: #4b5379;
+
+  /* Shadows do not read on a dark ground, so the elevation comes from the line. */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 36px -30px rgba(0, 0, 0, 0.9);
+  --shadow-pop: 0 24px 60px -28px rgba(0, 0, 0, 0.95);
 }
 
 @media (max-width: 639px) {
@@ -888,14 +960,14 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background: #c3cbe8;
+    background: var(--scroll-thumb);
     border-radius: 999px;
     border: 3px solid transparent;
     background-clip: content-box;
   }
 
   *::-webkit-scrollbar-thumb:hover {
-    background: #9aa5cd;
+    background: var(--scroll-thumb-hover);
     background-clip: content-box;
   }
 

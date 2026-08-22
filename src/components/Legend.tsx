@@ -19,7 +19,7 @@ const NODE_ITEMS: {
     state: 'idle',
     label: 'לא נתגלה',
     short: 'לא נתגלה',
-    fill: '#ffffff',
+    fill: 'var(--surface)',
     stroke: 'var(--state-idle-line)',
     glyph: '',
   },
@@ -51,8 +51,8 @@ const NODE_ITEMS: {
     state: 'rejected',
     label: 'נבדק ונדחה',
     short: 'נדחה',
-    fill: '#eef0f7',
-    stroke: '#98a1c0',
+    fill: 'var(--state-rejected-fill)',
+    stroke: 'var(--state-rejected)',
     glyph: 'cross',
   },
 ];
@@ -156,7 +156,7 @@ export function Legend({ flow = false, frames }: LegendProps) {
     { label: 'לא נבדקה', stroke: 'var(--state-idle-line)', width: 2 },
     { label: 'נבדקת עכשיו', stroke: 'var(--state-current)', width: 3, dash: '6 5' },
     { label: flow ? 'רוויה' : 'נבחרה לעץ', stroke: 'var(--state-done)', width: 5 },
-    { label: 'נדחתה', stroke: '#98a1c0', width: 2, dash: '3 6' },
+    { label: 'נדחתה', stroke: 'var(--state-rejected)', width: 2, dash: '3 6' },
   ];
   if (flow) {
     edgeItems.push({ label: 'שיורית', stroke: 'var(--state-frontier)', width: 3, dash: '7 5' });

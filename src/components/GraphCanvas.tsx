@@ -33,7 +33,7 @@ interface NodeStyle {
 }
 
 const NODE_STYLES: Record<NodeState, NodeStyle> = {
-  idle: { fill: '#ffffff', stroke: 'var(--state-idle-line)', width: 1.6, glyph: 'none' },
+  idle: { fill: 'var(--surface)', stroke: 'var(--state-idle-line)', width: 1.6, glyph: 'none' },
   /* Fill and ring carry the state on their own; a second mark only added noise. */
   frontier: {
     fill: 'var(--state-frontier-fill)',
@@ -49,8 +49,8 @@ const NODE_STYLES: Record<NodeState, NodeStyle> = {
   },
   done: { fill: 'var(--state-done-fill)', stroke: 'var(--state-done)', width: 3, glyph: 'none' },
   rejected: {
-    fill: '#eef0f7',
-    stroke: '#98a1c0',
+    fill: 'var(--state-rejected-fill)',
+    stroke: 'var(--state-rejected)',
     width: 2,
     dash: '5 4',
     glyph: 'cross',
@@ -68,7 +68,7 @@ const EDGE_STYLES: Record<EdgeState, EdgeStyle> = {
   idle: { stroke: 'var(--state-idle-line)', width: 2 },
   considered: { stroke: 'var(--state-current)', width: 3, dash: '6 5' },
   tree: { stroke: 'var(--state-done)', width: 5 },
-  rejected: { stroke: '#98a1c0', width: 2, dash: '3 6', opacity: 0.75 },
+  rejected: { stroke: 'var(--state-rejected)', width: 2, dash: '3 6', opacity: 0.75 },
   relaxed: { stroke: 'var(--state-current)', width: 4.5 },
   saturated: { stroke: 'var(--state-done)', width: 6 },
   residual: { stroke: 'var(--state-frontier)', width: 3, dash: '7 5' },
@@ -698,7 +698,7 @@ export function GraphCanvas({
                 <path
                   d={`M ${n.x + at.mark.ux * (R + 9) - 3.6} ${n.y + at.mark.uy * (R + 9)} h 7.2
                       M ${n.x + at.mark.ux * (R + 9)} ${n.y + at.mark.uy * (R + 9) - 3.6} v 7.2`}
-                  stroke="#fff"
+                  stroke="var(--on-accent)"
                   strokeWidth={1.8}
                   strokeLinecap="round"
                   pointerEvents="none"

@@ -9,6 +9,7 @@ import { AlgorithmPage } from './pages/AlgorithmPage';
 import { ComparisonTablePage } from './pages/ComparisonTablePage';
 import { ComparePage } from './pages/ComparePage';
 import { loadLastTab, saveLastTab } from './graphs/storage';
+import { useTheme } from './theme/useTheme';
 
 const ALL_IDS = [...ALGORITHMS.map((a) => a.id), ...EXTRA_TABS.map((t) => t.id)];
 
@@ -18,6 +19,7 @@ export function App() {
     return saved && ALL_IDS.includes(saved) ? saved : ALGORITHMS[0].id;
   });
   const [section, setSection] = useState<SectionId>('run');
+  const theme = useTheme();
   const [comparePair, setComparePair] = useState<string | null>(null);
   const mainRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
@@ -84,7 +86,7 @@ export function App() {
             <Brand onClick={() => go(ALGORITHMS[0].id)} />
           </div>
 
-          <AlgorithmSwitcher all={ALGORITHMS} current={tab} onNavigate={go} />
+          <AlgorithmSwitcher all={ALGORITHMS} current={tab} onNavigate={go} theme={theme} />
 
           {current && (
             <nav

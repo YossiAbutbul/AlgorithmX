@@ -5,8 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AlgorithmX - אלגוריתמים על גרפים</title>
     <meta name="description" content="לימוד אינטראקטיבי של תשעה אלגוריתמים על גרפים, עם הרצה צעד אחר צעד" />
-    <meta name="color-scheme" content="light" />
-    <meta name="theme-color" content="#eef1fb" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#eef1fb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c0e1c" media="(prefers-color-scheme: dark)" />
+    <script>
+      /* Stamp the theme before the first paint, so a dark reader never sees a white flash. */
+      (function () {
+        try {
+          var saved = localStorage.getItem('algorithmx:theme');
+          var dark =
+            saved === 'dark' ||
+            (saved !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

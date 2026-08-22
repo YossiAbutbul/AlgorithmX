@@ -16,8 +16,8 @@ const STATUS: Record<
   },
   rejected: {
     label: 'נדחתה',
-    color: '#7b8399',
-    bg: '#eef0f7',
+    color: 'var(--state-rejected)',
+    bg: 'var(--state-rejected-fill)',
     mark: 'rejected',
   },
 };

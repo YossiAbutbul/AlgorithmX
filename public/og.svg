@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="AlgorithmX, אלגוריתמים על גרפים">
+  <rect width="1200" height="630" fill="#5b3fd1"/>
+  <path d="M 0 470 Q 300 400 600 470 T 1200 470 L 1200 630 L 0 630 Z" fill="#4b32b6" opacity="0.55"/>
+  <text x="1088" y="284" text-anchor="end" direction="ltr" font-family="Rubik, 'IBM Plex Sans Hebrew', sans-serif" font-size="56" font-weight="600" fill="#ffffff">Algorithm<tspan fill="#fff2d6">X</tspan></text>
+  <text x="1088" y="376" text-anchor="end" direction="rtl" font-family="'IBM Plex Sans Hebrew', sans-serif" font-size="66" font-weight="700" fill="#ffffff">אלגוריתמים על גרפים</text>
+</svg>
